@@ -176,6 +176,7 @@ Page({
      */
     addNewReservation: function (e) {
         const that = this;
+        if (that._submitting) { return; }
         const week = common.getMyDay(new Date(`${that.data.cur_year}/${that.data.cur_month}/${that.data.currentDay + 1}`));
         const Token = wx.getStorageSync('Token');
         const now = new Date();
@@ -214,12 +215,16 @@ Page({
             }else if( noSelectDay < now){
                 common.showModel('只能预约比今天大的日期');
             }else {
+                that._submitting = true;
                 wx.request({
                     url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/bcReserveRecord/bcReserveRecordSave',
                     header: app.globalData.header,
                     data: {
                         reserveTime: that.data.dinTime,
                         reserveTimeWeek: week
+                    },
+                    complete: function () {
+                        that._submitting = false;
                     },
                     success: function (res) {
                         //返回的结果为1，说明用户未激活
@@ -244,7 +249,7 @@ Page({
                     //console.log('没有授权,引导用户授权',res)
                         wx.showModal({
                             title: '用户未授权',
-                            content: '如需正常使用红商报餐，请按确定并在授权管理中选中“用户信息”，然后点按确定。最后再重新进入小程序即可正常使用。',
+                            content: '如需正常使用饭堂报餐，请按确定并在授权管理中选中“用户信息”，然后点按确定。最后再重新进入小程序即可正常使用。',
                             showCancel: false,
                             success: function (res) {
                                 if (res.confirm) {
@@ -314,7 +319,7 @@ Page({
                                     header: app.globalData.header,
                                     success: function(res) {
                                         wx.showModal({
-                                            content: '为确保红商集团报餐小程序更好的使用，请完善个人信息',
+                                            content: '为确保饭堂报餐小程序更好的使用，请完善个人信息',
                                             showCancel: false,
                                             success: function(res) {
                                                 if (res.confirm) {
@@ -350,7 +355,7 @@ Page({
                                 }
                             }
                         },
-                        error: function(res) {
+                        fail: function(res) {
                             console.log("-", "请求失败");
                         }
                     })

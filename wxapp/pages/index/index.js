@@ -11,7 +11,7 @@ Page({
         //显示授权
         isShowEmpower: false,
         animated: false,
-        nickName: '红商家人',
+        nickName: '',
         cur_hour: '00',
         cur_minute: '00',
         cur_second: '00',
@@ -62,6 +62,7 @@ Page({
         // setTimeout(() => {
         //     that.compareTime();
         // }, 300);
+        clearTimeout(that.data.timer);
         setTimeout(()=>{
             that.countDown(that)
         },300);
@@ -77,7 +78,7 @@ Page({
     },
     onHide:function(){
         let e = this;
-        clearInterval(e.data.timer);
+        clearTimeout(e.data.timer);
     },
     /**
      * 设置当前时间
@@ -247,7 +248,7 @@ Page({
                                 that.valiBcRecord();
                             }
                         },
-                        error: function(res) {
+                        fail: function(res) {
                             console.log("-", "请求失败");
                         }
                     })
@@ -263,7 +264,7 @@ Page({
      */
     openAlert: function() {
         wx.showModal({
-            content: '为确保红商集团报餐小程序更好的使用，请完善个人信息',
+            content: '为确保饭堂报餐小程序更好的使用，请完善个人信息',
             showCancel: false,
             success: function(res) {
                 if (res.confirm) {
@@ -283,13 +284,13 @@ Page({
             url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/BcBanner/bcBannerList',
             header: app.globalData.header,
             success: function(res) {
-                const list = res.data.data;
+                const list = res.data.data || [];
+                const imgUrlList = [];
                 for (let val of list) {
-                    const imgUrl = val;
-                    that.data.imgUrlList.push(imgUrl);
+                    imgUrlList.push(val);
                 }
                 that.setData({
-                    imgUrlList: that.data.imgUrlList
+                    imgUrlList: imgUrlList
                 })
             },
             fail: function(res) {
@@ -466,6 +467,7 @@ Page({
      */
     openToast: function() {
         let that = this;
+        if (that._submitting) { return; }
         const Token = wx.getStorageSync('Token');
         if (Token) {
             app.globalData.header.Token = Token;
@@ -585,11 +587,15 @@ Page({
      */
     NewspaperMeal: function() {
         var that = this;
+        that._submitting = true;
         wx.request({
             url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/BcRecord/BcRecordMealSave',
             header: app.globalData.header,
             data:{
                 orderMeal: that.data.orderMeal
+            },
+            complete: function() {
+                that._submitting = false;
             },
             success: function(res) {
                 if(res.data.code == 2){

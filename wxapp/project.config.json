@@ -14,8 +14,8 @@
 	},
 	"compileType": "miniprogram",
 	"libVersion": "2.7.2",
-	"appid": "wx60028a6bb16f015a",
-	"projectname": "%E7%BA%A2%E5%95%86%E6%8A%A5%E9%A4%90",
+	"appid": "wxYOUR_MINIAPP_APPID",
+	"projectname": "饭堂报餐",
 	"debugOptions": {
 		"hidedInDevtools": []
 	},

@@ -15,7 +15,7 @@ Page({
     disabled:false,  //发送按钮默认启用
     currentTime:60,   //验证码倒计时
     smsText:'获取验证码',
-    imgUrl: 'http://depot1.nipic.com/file/20131128/10593858_11043106759.gif'
+    imgUrl: '/images/default-avatar.png'
   },
   /**
    * 生命周期函数--监听页面加载

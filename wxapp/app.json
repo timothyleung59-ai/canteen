@@ -8,7 +8,7 @@
     "window": {
         "backgroundTextStyle": "light",
         "navigationBarBackgroundColor": "#fff",
-        "navigationBarTitleText": "红商集团报餐",
+        "navigationBarTitleText": "饭堂报餐",
         "navigationBarTextStyle": "black"
     },
     "tabBar":{

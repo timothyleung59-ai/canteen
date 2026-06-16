@@ -1,13 +1,15 @@
 //app.js
 App({
     globalData: {
-        web_path: "服务地址",
+        // TODO: 改成你单位的后端 HTTPS 域名(结尾不带斜杠)，并加入小程序后台 request 合法域名
+        web_path: "https://your-backend-domain.com",
         header: {
             Token: "",
             Cookie: "",
             'content-type': 'application/x-www-form-urlencoded'
         },
-        "appId": "wx60028a6bb16f015a",
+        // TODO: 改成你单位的小程序 appid(须与后端 WX_APPID / ADMIN_APPID 一致)
+        "appId": "wxYOUR_MINIAPP_APPID",
     },
     onLaunch: function () {
         // 展示本地存储能力
