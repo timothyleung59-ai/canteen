@@ -25,6 +25,12 @@ public interface BcRecordRepository extends JpaRepository<BcRecord,Long>{
     BcRecord getByUserIdAndDinTime(@Param("appId") String appId,@Param("userId")Long userId, @Param("dinTime")String dinTime);
 
     /**
+     * 按 appId + userId + id 精确获取一条报餐记录(取消报餐前校验用)
+     */
+    @Query("select obj from BcRecord obj where obj.appId=:appId and obj.userId=:userId and obj.id=:id")
+    BcRecord getByAppIdAndUserIdAndId(@Param("appId") String appId,@Param("userId") Long userId,@Param("id") Long id);
+
+    /**
      * 查询某天的总报餐人数
      * @param appId
      * @param dinTime

@@ -66,11 +66,18 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
         }
     }
     public ActionResult save(String appid,Long id,BcReserveRecordAddForm bcReserveRecordAddForm){
+        Date reserveDate = CommUtils.formatDate(bcReserveRecordAddForm.getReserveTime(),"yyyy-MM-dd");
+        // L1: 预约去重——同用户同一天已预约则拒绝
+        String reserveDateStr = CommUtils.formatDate(reserveDate,"yyyy-MM-dd");
+        List<BcReserveRecord> exists = this.bcReserveRecordRepository.findByUserAndReserveDate(appid, id, reserveDateStr);
+        if (exists != null && !exists.isEmpty()) {
+            return ActionResult.error(3, "您当天已预约，请勿重复预约");
+        }
         BcReserveRecord bcReserveRecord = new BcReserveRecord();
         bcReserveRecord.setAddTime(new Date());
         bcReserveRecord.setAppId(appid);
         bcReserveRecord.setBcUserId(id);
-        bcReserveRecord.setReserveTime(CommUtils.formatDate(bcReserveRecordAddForm.getReserveTime(),"yyyy-MM-dd"));
+        bcReserveRecord.setReserveTime(reserveDate);
         bcReserveRecord.setReserveTimeWeek(bcReserveRecordAddForm.getReserveTimeWeek());
         this.save(bcReserveRecord);
         return ActionResult.ok(bcReserveRecord);

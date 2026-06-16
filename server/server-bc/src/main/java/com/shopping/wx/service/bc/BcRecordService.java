@@ -56,7 +56,7 @@ public interface BcRecordService extends IBaseService<BcRecord,Long>{
      * @return
      * @throws Exception
      */
-    int deleteBcRecordById(String appId,Long userId,Long id)throws Exception;
+    ActionResult deleteBcRecordById(String appId,Long userId,Long id)throws Exception;
 
     /**
      *根据就餐时间获取报餐列表(多表关联)

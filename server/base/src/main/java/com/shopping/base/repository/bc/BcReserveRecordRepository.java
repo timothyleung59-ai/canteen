@@ -24,6 +24,12 @@ public interface BcReserveRecordRepository extends JpaRepository<BcReserveRecord
     List<BcReserveRecord> getBcReserveRecordList(@Param("bcUserId") Long bcUserId,@Param("appId") String appId);
 
     /**
+     * 查某用户在某一天的预约记录(预约去重用)
+     */
+    @Query("select obj from BcReserveRecord obj where obj.appId=:appId and obj.bcUserId=:bcUserId and obj.reserveTime like concat('%',:reserveTime,'%')")
+    List<BcReserveRecord> findByUserAndReserveDate(@Param("appId") String appId,@Param("bcUserId") Long bcUserId,@Param("reserveTime") String reserveTime);
+
+    /**
      * 根据选中的记录删除数据库的预约记录
      * @param appId
      * @param bcUserId

@@ -41,6 +41,25 @@ public class BcRecordServiceImpl extends BaseServiceImpl<BcRecord,Long> implemen
     @Override
     public ActionResult bcRecordMealSave(String appId,Long id,int status,Integer orderMeal) throws Exception{
         BcConfig config =bcConfigService.getConfigByAppId(appId);
+        // L6: 周末闸门 + 午餐报餐截止时间
+        boolean orderTomorrow = (orderMeal != null && 1 == orderMeal);
+        Date dinDate = orderTomorrow ? CommUtils.getDateAfter(new Date(), 1) : new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dinDate);
+        int dow = cal.get(Calendar.DAY_OF_WEEK);
+        if (dow == Calendar.SATURDAY && !config.isSaturdayCanDiner()) {
+            return ActionResult.error(2, "周六不可报餐");
+        }
+        if (dow == Calendar.SUNDAY && !config.isSundayCanDiner()) {
+            return ActionResult.error(2, "周日不可报餐");
+        }
+        // 截止时间只约束"当天报餐"，预约次日不受当天截止限制
+        if (!orderTomorrow && CommUtils.isNotNull(config.getLunchOrderTime())) {
+            String now = CommUtils.formatDate(new Date(), "HH:mm");
+            if (now.compareTo(config.getLunchOrderTime().trim()) > 0) {
+                return ActionResult.error(2, "已过午餐报餐截止时间");
+            }
+        }
         Boolean userNeedApprove = config.isUserNeedApprove();
         Boolean lunchCanMeal = config.isLunchCanMeal();
         //不需要审核
@@ -85,7 +104,11 @@ public class BcRecordServiceImpl extends BaseServiceImpl<BcRecord,Long> implemen
         }else{
             bcRecord.setDinTime(new Date());
         }
-
+        // L1: 服务端去重——同用户同一天已报餐则拒绝(防连点/重放重复落库)
+        String dinDateStr = CommUtils.formatDate(bcRecord.getDinTime(), "yyyy-MM-dd");
+        if (this.bcRecordRepository.getByUserIdAndDinTime(appId, id, dinDateStr) != null) {
+            return ActionResult.error(3, "您当天已报餐，请勿重复报餐");
+        }
         bcRecord.setHadEat(BcRecordCons.HAD_EAT_CANNEL);
         this.save(bcRecord);
         return ActionResult.ok(bcRecord);
@@ -118,8 +141,20 @@ public class BcRecordServiceImpl extends BaseServiceImpl<BcRecord,Long> implemen
     }
 
     @Override
-    public int deleteBcRecordById(String appId, Long userId, Long id) throws Exception {
-        return this.bcRecordRepository.deleteBcRecordByAppIdAndUserIdAndId(appId,userId,id);
+    public ActionResult deleteBcRecordById(String appId, Long userId, Long id) throws Exception {
+        BcRecord record = this.bcRecordRepository.getByAppIdAndUserIdAndId(appId, userId, id);
+        // L4: 取消报餐校验——记录须存在且属于本人；已就餐 / 历史日期不可取消
+        if (record == null) {
+            return ActionResult.error(1, "报餐记录不存在或无权操作");
+        }
+        if (record.getHadEat() != null && record.getHadEat() == BcRecordCons.HAD_EAT_CONFIRM) {
+            return ActionResult.error(2, "已就餐，不能取消");
+        }
+        if (record.getDinTime() != null && CommUtils.compareDate(record.getDinTime(), 1) < 0) {
+            return ActionResult.error(3, "历史报餐不可取消");
+        }
+        int result = this.bcRecordRepository.deleteBcRecordByAppIdAndUserIdAndId(appId, userId, id);
+        return ActionResult.ok(result);
     }
 
     @Override

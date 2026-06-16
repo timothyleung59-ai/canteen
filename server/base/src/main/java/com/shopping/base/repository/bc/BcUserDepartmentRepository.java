@@ -27,6 +27,13 @@ public interface BcUserDepartmentRepository extends JpaRepository<BcUserDepartme
     List<BcUserDepartment> findByAppId(String  appid);
 
     /**
+     * 统计某 appId 下的部门数量
+     * @param appId
+     * @return
+     */
+    int countByAppId(String appId);
+
+    /**
      * 根据appId和id获取部门
      * @param appId
      * @param id

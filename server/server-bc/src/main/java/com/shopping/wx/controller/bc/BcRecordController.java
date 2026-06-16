@@ -91,8 +91,7 @@ public class BcRecordController {
     @GetMapping(value = "/deleteBcRecordById")
     public ActionResult deleteBcRecordById(@PathVariable String appid,@CurrentBcUser BcUser bcUser,Long id){
         try {
-            int result = bcRecordService.deleteBcRecordById(appid,bcUser.getId(),id);
-            return ActionResult.ok(result);
+            return bcRecordService.deleteBcRecordById(appid,bcUser.getId(),id);
         } catch (Exception e) {
             log.error("删除预约记录失败",e);
         }

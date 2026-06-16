@@ -4,6 +4,7 @@ package com.shopping.wx.token.authorization.resolvers;
 import com.shopping.base.domain.bc.BcUser;
 import com.shopping.base.utils.CommUtils;
 import com.shopping.wx.service.bc.BcUserService;
+import com.shopping.wx.token.authorization.BcUnauthorizedException;
 import com.shopping.wx.token.authorization.annotation.CurrentBcUser;
 import com.shopping.wx.token.authorization.manager.JwtTokenUtils;
 import com.shopping.wx.token.model.CheckResult;
@@ -42,9 +43,13 @@ public class CurrentBcUserMethodArgumentResolver implements HandlerMethodArgumen
             if (checkResult.isSuccess()) {
                 String key = checkResult.getClaims().getId();
                 BcUser bcUser = this.bcUserService.getObjById(CommUtils.null2Long(key));
-                return bcUser;
+                if (bcUser != null) {
+                    return bcUser;
+                }
             }
         }
-        return null;
+        // L3: token 缺失/失效/用户不存在时抛鉴权异常，由 GlobalExceptionAdvice 统一返回 401，
+        // 避免下游 controller 拿到 null 后 bcUser.getId() 触发 NPE 被吞成"服务器异常"
+        throw new BcUnauthorizedException("未登录或登录已过期");
     }
 }

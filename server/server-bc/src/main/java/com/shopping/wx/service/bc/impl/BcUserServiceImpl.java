@@ -50,11 +50,11 @@ public class BcUserServiceImpl  extends BaseServiceImpl<BcUser,Long> implements 
         BcUser bcUser = new BcUser();
         BcConfig config =bcConfigService.getConfigByAppId(appId);
         Boolean userNeedApprove =config.isUserNeedApprove();
-        //如果用户不需要审核就给予状态为1：已激活
+        //如果用户不需要审核就给予状态为1：已激活；需要审核则置为未激活，等管理员审核
         if(!userNeedApprove ){
-            bcUser.setStatus(BcUserCons.STATUS_NOACTIVE);
-        }else{
             bcUser.setStatus(BcUserCons.STATUS_ACTIVE);
+        }else{
+            bcUser.setStatus(BcUserCons.STATUS_NOACTIVE);
         }
         bcUser.setAddTime(new Date());
         bcUser.setAppId(appId);

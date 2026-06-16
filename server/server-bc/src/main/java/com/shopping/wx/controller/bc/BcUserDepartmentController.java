@@ -70,7 +70,7 @@ public class BcUserDepartmentController {
         try{
             Map<Object,Object>  map = new HashMap<>(2);
             List<Map<String,Object>> deptList=this.bcUserDepartmentService.getDepartmentPageList(appid,currentPage,pageSize);
-            Long total = this.bcUserDepartmentRepository.count();
+            long total = this.bcUserDepartmentRepository.countByAppId(appid);
             map.put("data",deptList);
             map.put("total",total);
             return  ActionResult.ok(map);
