@@ -1,8 +1,8 @@
 wx:
   miniapp:
     configs:
-        - appid:    #微信小程序的appid
-          secret:   #微信小程序的Secret
-          token: #微信小程序消息服务器配置的token
-          aesKey: #微信小程序消息服务器配置的EncodingAESKey
+        - appid: ${WX_APPID:}       #微信小程序的appid (通过环境变量 WX_APPID 注入)
+          secret: ${WX_SECRET:}     #微信小程序的Secret (通过环境变量 WX_SECRET 注入)
+          token: ${WX_TOKEN:}       #消息服务器配置的token (可选)
+          aesKey: ${WX_AESKEY:}     #消息服务器配置的EncodingAESKey (可选)
           msgDataFormat: JSON

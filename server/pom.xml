@@ -29,14 +29,6 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
-		<repository>
-			<id>shopping</id>
-			<name>shopping nexus</name>
-			<url>http://116.62.38.24:8088/nexus/content/groups/public</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>

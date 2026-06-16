@@ -1,6 +1,5 @@
 package com.shopping;
 
-import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -8,8 +7,6 @@ import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.io.ClassPathResource;
 
 import javax.servlet.MultipartConfigElement;
 import java.io.File;
@@ -55,16 +52,9 @@ public class BcBootstrap {
         return factory.createMultipartConfig();
     }
 
-    /**
-     * 让
-     * @return
-     */
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer properties() {
-        PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
-        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-        yaml.setResources(new ClassPathResource("wx.yml"));
-        configurer.setProperties(yaml.getObject());
-        return configurer;
-    }
+    // 说明: 原先这里有一个自定义的 PropertySourcesPlaceholderConfigurer 用来加载 wx.yml,
+    // 但它作为 BeanFactoryPostProcessor 实例化过早, 拿不到 Environment, 导致 ${ENV:默认值}
+    // 占位符只能用 wx.yml + 默认值解析, 永远读不到环境变量(DB_PASSWORD / WX_APPID 等全部失效)。
+    // wx.yml 实际上已由 WxMaProperties 的 @PropertySource("classpath:wx.yml") 正常加载,
+    // 故移除该 Bean, 改用 Spring Boot 默认占位符解析器, 环境变量注入即可正常生效。
 }

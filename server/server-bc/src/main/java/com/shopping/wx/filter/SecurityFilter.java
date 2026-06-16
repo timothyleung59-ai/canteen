@@ -43,6 +43,7 @@ public class SecurityFilter implements Filter {
 	public void init(FilterConfig arg0) throws ServletException {
 		// TODO Auto-generated method stub
 		GreenUrlSet.add("/bc");
+		GreenUrlSet.add("/admin");
 		GreenUrlSet.add("/demo");
 		GreenUrlSet.add("/login");
 		GreenUrlSet.add("/wx");

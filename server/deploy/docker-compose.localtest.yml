@@ -1,0 +1,60 @@
+# ============================================================
+#  仅【本机启动验证】用，不是生产部署文件。
+#  与生产一致：配置全部通过【环境变量】注入（验证占位符解析已修复）。
+#  用法：docker compose -f docker-compose.localtest.yml up -d
+# ============================================================
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: canteen-mysql-test
+    environment:
+      MYSQL_ROOT_PASSWORD: testpass
+      MYSQL_DATABASE: baocan
+      TZ: Asia/Shanghai
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ../doc/数据.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-ptestpass", "-e", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:6
+    container_name: canteen-redis-test
+
+  app:
+    image: eclipse-temurin:8-jre
+    container_name: canteen-app-test
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8088"
+      BASE_PATH: http://localhost:8088/
+      APP_PATH: http://localhost:8088/
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: baocan
+      DB_USER: root
+      DB_PASSWORD: testpass
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      REDIS_DB: "2"
+      WX_APPID: wxtest0000000000
+      WX_SECRET: testsecret
+      ADMIN_APPID: wxtest0000000000
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+      XXL_JOB_RUNNABLE: "off"
+    volumes:
+      - ../server-bc/target/server-bc-1.0.0.RELEASE.jar:/app/app.jar:ro
+    command: ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dfile.encoding=UTF-8", "-jar", "/app/app.jar"]
+    ports:
+      - "8088:8088"

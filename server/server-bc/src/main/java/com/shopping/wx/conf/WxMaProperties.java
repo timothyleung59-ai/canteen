@@ -2,16 +2,15 @@ package com.shopping.wx.conf;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
 
 /**
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
+ * wx.yml 的加载见 {@link WxMaConfiguration} 上的 @PropertySource(YamlPropertySourceFactory)。
  */
 @Data
 @ConfigurationProperties(prefix = "wx.miniapp")
-@PropertySource("classpath:wx.yml")
 public class WxMaProperties {
 
     private List<Config> configs;

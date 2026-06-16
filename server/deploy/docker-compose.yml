@@ -1,0 +1,83 @@
+# ============================================================
+#  饭堂订餐系统 - 一键部署 (MySQL + Redis + 后端)
+#  用法见同目录 README.md。先复制 .env.example 为 .env 并填好。
+# ============================================================
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: canteen-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-baocan}
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 首次启动自动导入建表 SQL（仅当数据目录为空时执行一次）
+      - ../doc/数据.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # 仅本机访问；如需外部连数据库再开放
+    # ports:
+    #   - "3306:3306"
+
+  redis:
+    image: redis:6
+    container_name: canteen-redis
+    restart: unless-stopped
+    command: ${REDIS_PASSWORD:+redis-server --requirepass ${REDIS_PASSWORD}}
+    volumes:
+      - redis-data:/data
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: canteen-server:latest
+    container_name: canteen-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8088"
+      BASE_PATH: ${BASE_PATH}
+      APP_PATH: ${APP_PATH}
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-baocan}
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: "2"
+      WX_APPID: ${WX_APPID}
+      WX_SECRET: ${WX_SECRET}
+      WX_TOKEN: ${WX_TOKEN:-}
+      WX_AESKEY: ${WX_AESKEY:-}
+      DRUID_USER: ${DRUID_USER:-admin}
+      DRUID_PASSWORD: ${DRUID_PASSWORD:-changeme_please}
+      # ---- Web 后台管理员 ----
+      ADMIN_APPID: ${WX_APPID}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_UNIT_NAME: ${ADMIN_UNIT_NAME:-饭堂报餐管理后台}
+      XXL_JOB_RUNNABLE: "off"
+    ports:
+      - "${APP_PORT:-8088}:8088"
+    volumes:
+      - app-tmp:/data/tmp
+      - app-logs:/data/logs
+
+volumes:
+  mysql-data:
+  redis-data:
+  app-tmp:
+  app-logs:

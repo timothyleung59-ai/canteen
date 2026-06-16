@@ -18,3 +18,15 @@ generatorConfig.xml
 /files/
 
 # 忽略config
+
+# 部署密钥文件
+server/deploy/.env
+.env
+
+# 前端（admin-web）构建产物与依赖
+admin-web/node_modules
+admin-web/dist
+node_modules
+dist
+npm-debug.log*
+.vite

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import java.io.File;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 @Configuration
 @EnableConfigurationProperties(WxMaProperties.class)
+@PropertySource(value = "classpath:wx.yml", factory = YamlPropertySourceFactory.class)
 public class WxMaConfiguration {
     private final WxMaMessageHandler templateMsgHandler = (wxMessage, context, service, sessionManager) ->
         service.getMsgService().sendTemplateMsg(WxMaTemplateMessage.builder()

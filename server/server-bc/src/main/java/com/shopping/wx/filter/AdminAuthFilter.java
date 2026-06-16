@@ -1,0 +1,97 @@
+package com.shopping.wx.filter;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.shopping.wx.token.authorization.manager.JwtTokenUtils;
+import com.shopping.wx.token.model.CheckResult;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 后台管理鉴权过滤器。
+ * <p>
+ * 只拦截"纯管理端"接口(小程序不会调用的那些), 要求请求头携带有效的 Admin-Token。
+ * 小程序与后台共用的只读接口(部门列表 / 读配置 / 当天报餐人数 / 确认就餐等)不在拦截范围内,
+ * 保持原有开放逻辑, 避免影响小程序。
+ */
+public class AdminAuthFilter implements Filter {
+
+    /** 需要管理员登录态才能访问的接口路径片段(以下接口小程序均不调用) */
+    private static final List<String> PROTECTED = Arrays.asList(
+            "/BcUser/getUserPageList",
+            "/BcUser/updateStatusById",
+            "/BcUser/delete",
+            "/BcUser/export",
+            "/BcUser/editUserDepartmentId",
+            "/BcUserDepartment/getDepartmentPageList",
+            "/BcUserDepartment/save",
+            "/BcUserDepartment/updateName",
+            "/BcUserDepartment/deleteById",
+            "/BcRecord/getBcRecordList",
+            "/BcRecord/countBcRecordPageList",
+            "/BcRecord/export",
+            "/BcRecord/exportCount",
+            "/config/saveOrUpdate"
+    );
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+    }
+
+    @Override
+    public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) sreq;
+        String uri = request.getRequestURI();
+
+        boolean needAuth = uri.startsWith("/admin/") && !uri.equals("/admin/login");
+        if (!needAuth) {
+            for (String frag : PROTECTED) {
+                if (uri.contains(frag)) {
+                    needAuth = true;
+                    break;
+                }
+            }
+        }
+
+        if (!needAuth) {
+            chain.doFilter(sreq, sresp);
+            return;
+        }
+
+        String token = request.getHeader("Admin-Token");
+        if (StringUtils.isBlank(token)) {
+            writeJson(sresp, 401, "未登录或登录已过期");
+            return;
+        }
+        CheckResult result = JwtTokenUtils.validateJWT(token);
+        if (result.isSuccess() && result.getClaims() != null
+                && "admin".equals(result.getClaims().getSubject())) {
+            chain.doFilter(sreq, sresp);
+        } else {
+            writeJson(sresp, 401, "登录已过期, 请重新登录");
+        }
+    }
+
+    private void writeJson(ServletResponse resp, int code, String msg) throws IOException {
+        JSONObject json = new JSONObject();
+        json.put("code", code);
+        json.put("msg", msg);
+        resp.setContentType("application/json;charset=UTF-8");
+        resp.getWriter().write(JSON.toJSONString(json));
+    }
+
+    @Override
+    public void destroy() {
+    }
+}

@@ -2,8 +2,6 @@ package com.shopping.base.repository.bc;
 
 import com.shopping.base.domain.bc.BcUser;
 import com.shopping.base.domain.bc.BcUserWx;
-import com.shopping.base.domain.user.User;
-import com.shopping.base.domain.user.UserWx;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
