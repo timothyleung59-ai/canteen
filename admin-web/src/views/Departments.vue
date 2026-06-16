@@ -57,8 +57,8 @@ const saving = ref(false)
 async function load() {
   loading.value = true
   try {
-    const list = await getDepartmentPageList(1, 200)
-    rows.value = list || []
+    const res = await getDepartmentPageList(1, 200)
+    rows.value = (res && res.data) || []
   } finally {
     loading.value = false
   }

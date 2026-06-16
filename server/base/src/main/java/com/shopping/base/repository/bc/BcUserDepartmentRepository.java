@@ -16,7 +16,7 @@ public interface BcUserDepartmentRepository extends JpaRepository<BcUserDepartme
      * @param appId
      * @return
      */
-    @Query("select  count(r.id) as count,d.name,d.id from BcUserDepartment d left join BcUser u on (d.id=u.userDepartmentId) left  join BcRecord r on(u.id =r.userId AND u.appId= r.appId and r.dinTime like concat(:dinTime,'%') ) where  d.appId=:appId   group by d.name")
+    @Query("select  count(r.id) as count,d.name,d.id from BcUserDepartment d left join BcUser u on (d.id=u.userDepartmentId) left  join BcRecord r on(u.id =r.userId AND u.appId= r.appId and r.dinTime like concat(:dinTime,'%') ) where  d.appId=:appId   group by d.id")
     List<BcUserDepartment>  countDinnerByDay(@Param("appId")String appId,@Param("dinTime")String dinTime);
 
     /**

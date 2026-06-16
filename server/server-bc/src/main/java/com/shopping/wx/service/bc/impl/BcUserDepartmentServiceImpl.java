@@ -45,7 +45,7 @@ public class BcUserDepartmentServiceImpl extends BaseServiceImpl<BcUserDepartmen
 
     @Override
     public List<Map<String,Object>> getDepartmentPageList(String appId, int currentPage, int pageSize) throws Exception {
-        String sql="select d.name,count(u.name) as headcount,d.id from bc_user_department d  left join bc_user u on(u.app_id = d.app_id and u.user_department_id = d.id) where d.app_id =?0  group by d.name order by d.id asc";
+        String sql="select d.name,count(u.name) as headcount,d.id from bc_user_department d  left join bc_user u on(u.app_id = d.app_id and u.user_department_id = d.id) where d.app_id =?0  group by d.id order by d.id asc";
         List<Map<String,Object>> list = this.bcUserDepartmentDAO.queryBySQLPage(sql,currentPage,pageSize,appId);
         return list;
     }

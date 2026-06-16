@@ -84,6 +84,7 @@ async function save() {
   saving.value = true
   try {
     await saveConfig({
+      id: form.id || undefined,
       userNeedApprove: form.userNeedApprove,
       lunchCanMeal: form.lunchCanMeal,
       dinnerCanMeal: form.dinnerCanMeal,

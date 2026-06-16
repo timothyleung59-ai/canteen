@@ -66,7 +66,8 @@ async function load() {
     tomorrow.value = t1 || 0
     empTotal.value = (emp && emp.total) || 0
     deptTotal.value = (depts && depts.length) || 0
-    deptRows.value = (deptPage && deptPage.length ? deptPage : depts || []).map((d) => ({
+    const deptArr = (deptPage && deptPage.data) || []
+    deptRows.value = (deptArr.length ? deptArr : depts || []).map((d) => ({
       name: d.name,
       headcount: d.headcount != null ? d.headcount : '-'
     }))
