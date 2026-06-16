@@ -64,6 +64,8 @@ services:
       WX_AESKEY: ${WX_AESKEY:-}
       DRUID_USER: ${DRUID_USER:-admin}
       DRUID_PASSWORD: ${DRUID_PASSWORD:-changeme_please}
+      # JWT 签名密钥(签发/校验 token)。务必设置为足够长的随机串，切勿用默认值
+      JWT_SECRET: ${JWT_SECRET}
       # ---- Web 后台管理员 ----
       ADMIN_APPID: ${WX_APPID}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}

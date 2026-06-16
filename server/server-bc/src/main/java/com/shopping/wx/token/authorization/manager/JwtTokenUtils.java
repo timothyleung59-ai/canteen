@@ -1,6 +1,5 @@
 package com.shopping.wx.token.authorization.manager;
 
-import com.shopping.base.foundation.util.Base64;
 import com.shopping.wx.token.config.Constants;
 import com.shopping.wx.token.config.ResultStatus;
 import com.shopping.wx.token.model.CheckResult;
@@ -89,7 +88,8 @@ public class JwtTokenUtils {
      * @return
      */
     private static SecretKey generalKey() {
-        byte[] encodedKey = Base64.decode(Constants.JWT_SECERT);
+        // 直接用密钥字符串的 UTF-8 字节作为 HMAC 密钥，避免要求 JWT_SECRET 必须是合法 base64
+        byte[] encodedKey = Constants.JWT_SECERT.getBytes(java.nio.charset.StandardCharsets.UTF_8);
         SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
         return key;
     }

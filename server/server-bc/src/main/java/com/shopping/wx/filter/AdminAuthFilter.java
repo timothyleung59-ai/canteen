@@ -41,6 +41,10 @@ public class AdminAuthFilter implements Filter {
             "/BcRecord/countBcRecordPageList",
             "/BcRecord/export",
             "/BcRecord/exportCount",
+            "/BcRecord/confirmEat",
+            "/BcBanner/upload",
+            "/BcBanner/deleteImg",
+            "/bctch",
             "/config/saveOrUpdate"
     );
 
@@ -56,12 +60,7 @@ public class AdminAuthFilter implements Filter {
 
         boolean needAuth = uri.startsWith("/admin/") && !uri.equals("/admin/login");
         if (!needAuth) {
-            for (String frag : PROTECTED) {
-                if (uri.contains(frag)) {
-                    needAuth = true;
-                    break;
-                }
-            }
+            needAuth = matchesProtected(uri);
         }
 
         if (!needAuth) {
@@ -81,6 +80,30 @@ public class AdminAuthFilter implements Filter {
         } else {
             writeJson(sresp, 401, "登录已过期, 请重新登录");
         }
+    }
+
+    /**
+     * 判断 URI 是否命中受保护接口。
+     * 用"边界匹配"而非简单 contains: 片段之后必须是串尾 / '/' / '?',
+     * 避免 "/BcRecord/getBcRecordList" 误伤 "/BcRecord/getBcRecordListByDinTime"(小程序共用只读),
+     * 同时仍能匹配带路径参数的 "/BcUserDepartment/deleteById/{id}"。
+     */
+    private boolean matchesProtected(String uri) {
+        for (String frag : PROTECTED) {
+            int idx = uri.indexOf(frag);
+            if (idx < 0) {
+                continue;
+            }
+            int end = idx + frag.length();
+            if (end == uri.length()) {
+                return true;
+            }
+            char c = uri.charAt(end);
+            if (c == '/' || c == '?') {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void writeJson(ServletResponse resp, int code, String msg) throws IOException {

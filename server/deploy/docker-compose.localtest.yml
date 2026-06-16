@@ -52,6 +52,7 @@ services:
       ADMIN_APPID: wxtest0000000000
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: admin123
+      JWT_SECRET: localtest-jwt-secret-0123456789abcdef
       XXL_JOB_RUNNABLE: "off"
     volumes:
       - ../server-bc/target/server-bc-1.0.0.RELEASE.jar:/app/app.jar:ro
