@@ -41,11 +41,13 @@ public class AdminAuthFilter implements Filter {
             "/BcRecord/countBcRecordPageList",
             "/BcRecord/export",
             "/BcRecord/exportCount",
-            "/BcRecord/confirmEat",
             "/BcBanner/upload",
             "/BcBanner/deleteImg",
             "/bctch",
             "/config/saveOrUpdate"
+            // 注意: /BcRecord/confirmEat(确认就餐/核销) 故意不在此列——小程序统计页的"确认就餐"
+            // 按钮由普通登录用户(用 Token 头, 非 Admin-Token)调用, 加入会 401 打断该功能。
+            // 若要收紧"任何用户都能核销"这一弱点, 需单独做产品决策(改后台/硬件核销或加 @CurrentBcUser)。
     );
 
     @Override
