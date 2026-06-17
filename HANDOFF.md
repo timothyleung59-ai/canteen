@@ -50,7 +50,7 @@
 ```
 canteen/
 ├── server/                  后端 (Java 8 + SpringBoot 2.1.3, 多模块 Maven)
-│   ├── parent/ base/ framework/   父POM / 领域实体仓储 / 9个 starter
+│   ├── parent/ base/ framework/   父POM / 领域实体仓储 / 6个 starter（已清理掉 mq/DynamicDruid/token 等死模块）
 │   ├── server-bc/           主应用（控制器/服务/过滤器/配置）
 │   ├── doc/数据.sql          建表 SQL（容器首启自动导入）
 │   ├── doc/seed-test.sql     ★ 本机验证测试数据（3部门/6员工/13记录/1配置，幂等）
