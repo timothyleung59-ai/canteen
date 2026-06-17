@@ -18,12 +18,10 @@
     <!--</parent>-->
     <modules>
         <module>spring-boot-starter-druid</module>
-        <module>spring-boot-starter-DynamicDruid</module>
         <module>spring-boot-starter-swagger</module>
         <module>spring-boot-starter-redis</module>
         <module>spring-boot-starter-oss</module>
         <module>spring-boot-starter-sms</module>
         <module>spring-boot-starter-applicationContext</module>
-        <module>spring-boot-starter-mq</module>
     </modules>
 </project>
