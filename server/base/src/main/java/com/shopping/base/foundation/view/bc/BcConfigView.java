@@ -28,4 +28,8 @@ public class BcConfigView  extends BeanView<BcConfig>  implements Serializable {
     private boolean lunchCanMeal;
     /** 晚餐是否可报餐 */
     private boolean dinnerCanMeal;
+    /** 停餐日期(节假日等不开餐), 逗号/换行分隔, yyyy-MM-dd */
+    private String closedDates;
+    /** 补班开餐日(调休上班), 同上 */
+    private String openDates;
 }

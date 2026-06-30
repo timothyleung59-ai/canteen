@@ -58,6 +58,8 @@ CREATE TABLE `bc_config` (
   `dinner_order_time` varchar(32) DEFAULT NULL COMMENT '晚餐报餐时间',
   `lunch_can_meal` bit(1) DEFAULT NULL COMMENT '午餐是否可报餐',
   `dinner_can_meal` bit(1) DEFAULT NULL,
+  `closed_dates` varchar(2048) DEFAULT NULL COMMENT '停餐日期(节假日等),逗号/换行分隔 yyyy-MM-dd',
+  `open_dates` varchar(2048) DEFAULT NULL COMMENT '补班开餐日(调休上班),逗号/换行分隔 yyyy-MM-dd',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT=';';
 

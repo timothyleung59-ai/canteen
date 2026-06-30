@@ -33,6 +33,18 @@
         <el-switch v-model="form.sundayCanDiner" />
       </el-form-item>
 
+      <el-divider content-position="left">节假日 / 停餐</el-divider>
+      <el-form-item label="停餐日期">
+        <el-input v-model="form.closedDates" type="textarea" :rows="4"
+          placeholder="法定节假日等不开餐的日期，每行一个，格式 2026-10-01" />
+        <span class="hint">这些日期不开餐：员工报餐 / 预订 / 一键报本周本月 都会自动跳过</span>
+      </el-form-item>
+      <el-form-item label="补班开餐日">
+        <el-input v-model="form.openDates" type="textarea" :rows="3"
+          placeholder="调休上班、照常开餐的日期，每行一个，格式 2026-10-11" />
+        <span class="hint">调休补班日：即使是周末也照常开餐（优先级最高）</span>
+      </el-form-item>
+
       <el-form-item>
         <el-button type="primary" :loading="saving" @click="save">保存设置</el-button>
         <el-button @click="load">重置</el-button>
@@ -56,7 +68,9 @@ const form = reactive({
   lunchOrderTime: '09:30',
   dinnerOrderTime: '15:30',
   saturdayCanDiner: false,
-  sundayCanDiner: false
+  sundayCanDiner: false,
+  closedDates: '',
+  openDates: ''
 })
 
 async function load() {
@@ -72,7 +86,9 @@ async function load() {
         lunchOrderTime: cfg.lunchOrderTime || '09:30',
         dinnerOrderTime: cfg.dinnerOrderTime || '15:30',
         saturdayCanDiner: !!cfg.saturdayCanDiner,
-        sundayCanDiner: !!cfg.sundayCanDiner
+        sundayCanDiner: !!cfg.sundayCanDiner,
+        closedDates: cfg.closedDates || '',
+        openDates: cfg.openDates || ''
       })
     }
   } finally {
@@ -91,7 +107,9 @@ async function save() {
       lunchOrderTime: form.lunchOrderTime || '',
       dinnerOrderTime: form.dinnerOrderTime || '',
       saturdayCanDiner: form.saturdayCanDiner,
-      sundayCanDiner: form.sundayCanDiner
+      sundayCanDiner: form.sundayCanDiner,
+      closedDates: form.closedDates || '',
+      openDates: form.openDates || ''
     })
     ElMessage.success('保存成功')
     load()

@@ -38,4 +38,10 @@ public class BcConfig {
     private boolean lunchCanMeal;
     /** 晚餐是否可报餐 */
     private boolean dinnerCanMeal;
+    /** 停餐日期(节假日等不开餐), 多个用逗号/换行分隔, 格式 yyyy-MM-dd */
+    @Column(length = 2048)
+    private String closedDates;
+    /** 补班开餐日(调休上班照常开餐), 同上格式; 优先级高于周末规则和停餐日 */
+    @Column(length = 2048)
+    private String openDates;
 }

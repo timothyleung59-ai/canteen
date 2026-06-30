@@ -38,9 +38,12 @@ Page({
             url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/config/getConfig',
             header: app.globalData.header,
             success: function (res) {
+                const d = res.data.data || {};
                 that.setData({
-                    saturdayCanDiner: res.data.data.saturdayCanDiner,
-                    sundayCanDiner: res.data.data.sundayCanDiner
+                    saturdayCanDiner: d.saturdayCanDiner,
+                    sundayCanDiner: d.sundayCanDiner,
+                    closedDates: d.closedDates || '',
+                    openDates: d.openDates || ''
                 })
             }
         })
@@ -50,11 +53,69 @@ Page({
      */
     reserveWeek: function () { this.batchReserve('week'); },
     reserveMonth: function () { this.batchReserve('month'); },
-    _pad2: function (n) { return n < 10 ? '0' + n : '' + n; },
-    _fmtDate: function (d) { return d.getFullYear() + '-' + this._pad2(d.getMonth() + 1) + '-' + this._pad2(d.getDate()); },
-    // 计算批量目标日期: 明天起到本周日/本月末, 跳周末(按设置)与当月已订/已报
+    cancelWeek: function () { this.batchCancel('week'); },
+    cancelMonth: function () { this.batchCancel('month'); },
+    // 批量取消: 取消范围内(本周/本月剩余)的已有预约
+    batchCancel: function (scope) {
+        const that = this;
+        const Token = wx.getStorageSync('Token');
+        if (!Token) { common.showModel('请先在"我的"完成注册'); return; }
+        if (that._batching) return;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const start = new Date(today); start.setDate(start.getDate() + 1);
+        let end;
+        if (scope === 'week') {
+            const daysToSun = (7 - today.getDay()) % 7;
+            end = new Date(today); end.setDate(end.getDate() + daysToSun);
+        } else {
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        }
+        const targets = (that.data.dateList || []).filter(function (it) {
+            const d = new Date(Date.parse(String(it.time).replace(/-/g, '/')));
+            d.setHours(0, 0, 0, 0);
+            return d >= start && d <= end;
+        });
+        if (targets.length === 0) {
+            common.showModel(scope === 'week' ? '本周没有可取消的预约' : '本月没有可取消的预约');
+            return;
+        }
+        common.showConfirm('批量取消', '确认取消' + (scope === 'week' ? '本周' : '本月') + ' ' + targets.length + ' 天的预约吗？', '确认', '再想想').then(function () {
+            that._batching = true;
+            app.globalData.header.Token = Token;
+            const total = targets.length;
+            let i = 0, ok = 0, fail = 0;
+            const step = function () {
+                if (i >= total) {
+                    wx.hideLoading(); that._batching = false;
+                    wx.showModal({ title: '取消完成', content: '已取消 ' + ok + ' 天' + (fail ? '，失败 ' + fail + ' 天' : ''), showCancel: false });
+                    that.viewAllReservation();
+                    return;
+                }
+                wx.showLoading({ title: '取消中 ' + (i + 1) + '/' + total, mask: true });
+                wx.request({
+                    url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/bcReserveRecord/deleteBcReserveRecord',
+                    header: app.globalData.header,
+                    data: { id: targets[i].id },
+                    success: function () { ok++; i++; step(); },
+                    fail: function () { fail++; i++; step(); }
+                });
+            };
+            step();
+        });
+    },
+    // 当前报餐配置(给 isClosedDay 用)
+    _cfg: function () {
+        return {
+            closedDates: this.data.closedDates,
+            openDates: this.data.openDates,
+            saturdayCanDiner: this.data.saturdayCanDiner,
+            sundayCanDiner: this.data.sundayCanDiner
+        };
+    },
+    // 计算批量目标日期: 明天起到本周日/本月末, 跳停餐日/周末与当月已订/已报
     _buildBatchDates: function (scope) {
         const that = this;
+        const cfg = that._cfg();
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const start = new Date(today); start.setDate(start.getDate() + 1);
         let end;
@@ -69,15 +130,12 @@ Page({
         const dates = [];
         const cur = new Date(start);
         while (cur <= end) {
-            const dow = cur.getDay();
-            let skip = false;
-            if (dow === 6 && !that.data.saturdayCanDiner) skip = true;
-            if (dow === 0 && !that.data.sundayCanDiner) skip = true;
+            let skip = common.isClosedDay(cur, cfg); // 停餐日/周末跳过(补班日不跳)
             if (!skip && cur.getFullYear() === today.getFullYear() && cur.getMonth() === today.getMonth()) {
                 const dnum = '' + cur.getDate();
                 if (reserved.indexOf(dnum) >= 0 || reported.indexOf(dnum) >= 0) skip = true;
             }
-            if (!skip) dates.push({ date: that._fmtDate(cur), week: common.getMyDay(new Date(cur.getTime())) });
+            if (!skip) dates.push({ date: common.fmtYmd(cur), week: common.getMyDay(new Date(cur.getTime())) });
             cur.setDate(cur.getDate() + 1);
         }
         return dates;
@@ -296,10 +354,8 @@ Page({
                 common.showModel('只能预约比今天大的日期');
             }else if(!that.data.dinTime){
                 common.showModel('请选择日期');
-            }else if (week == '周六' && that.data.saturdayCanDiner == false) {
-                common.showModel('星期六不能预约');
-            }else if (week == '周日' && that.data.sundayCanDiner == false) {
-                common.showModel('星期天不能预约');
+            }else if (common.isClosedDay(noSelectDay, that._cfg())) {
+                common.showModel('该日期不开餐(节假日/周末)，不可预订');
             }else if( noSelectDay < now){
                 common.showModel('只能预约比今天大的日期');
             }else {

@@ -312,6 +312,8 @@ Page({
                     lunchOrderTime: res.data.data.lunchOrderTime,
                     saturdayCanDiner: res.data.data.saturdayCanDiner,
                     sundayCanDiner: res.data.data.sundayCanDiner,
+                    closedDates: res.data.data.closedDates || '',
+                    openDates: res.data.data.openDates || '',
                     lunchStartTime: lunchTimeArr[0],
                     lunchEndTime: lunchTimeArr[1]
                 })
@@ -471,11 +473,17 @@ Page({
         const Token = wx.getStorageSync('Token');
         if (Token) {
             app.globalData.header.Token = Token;
-            let time = that.isWorkDate(new Date());
-            if (time == '星期六' && that.data.saturdayCanDiner == false) {
-                common.showModel('星期六不能报餐');
-            }else if (time == '星期天' && that.data.sundayCanDiner == false) {
-                common.showModel('星期天不能报餐');
+            // 按 orderMeal 算出真实报餐目标日: 2=今天, 1=明天
+            const offset = that.data.orderMeal == 2 ? 0 : 1;
+            const target = new Date(); target.setHours(0, 0, 0, 0); target.setDate(target.getDate() + offset);
+            const cfg = {
+                closedDates: that.data.closedDates,
+                openDates: that.data.openDates,
+                saturdayCanDiner: that.data.saturdayCanDiner,
+                sundayCanDiner: that.data.sundayCanDiner
+            };
+            if (common.isClosedDay(target, cfg)) {
+                common.showModel('该日期不开餐(节假日/周末)，不能报餐');
             }else if (that.data.baoCan == 0){
                 that.NewspaperMeal();
             } else {

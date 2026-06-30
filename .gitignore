@@ -30,3 +30,6 @@ node_modules
 dist
 npm-debug.log*
 .vite
+
+# 微信开发者工具私有配置(每人本地)
+wxapp/project.private.config.json
