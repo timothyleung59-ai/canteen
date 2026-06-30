@@ -1,15 +1,15 @@
 //app.js
 App({
     globalData: {
-        // TODO: 改成你单位的后端 HTTPS 域名(结尾不带斜杠)，并加入小程序后台 request 合法域名
-        web_path: "https://your-backend-domain.com",
+        // 后端 HTTPS 域名(结尾不带斜杠)，须加入小程序后台 request 合法域名
+        web_path: "https://aidio.site",
         header: {
             Token: "",
             Cookie: "",
             'content-type': 'application/x-www-form-urlencoded'
         },
-        // TODO: 改成你单位的小程序 appid(须与后端 WX_APPID / ADMIN_APPID 一致)
-        "appId": "wxYOUR_MINIAPP_APPID",
+        // 小程序 appid(与后端 WX_APPID / ADMIN_APPID 一致)
+        "appId": "wx3c1d1894db61d5de",
     },
     onLaunch: function () {
         // 展示本地存储能力
