@@ -12,9 +12,6 @@ Page({
     array: [],
     id: null,
     mobile: null,
-    disabled:false,  //发送按钮默认启用
-    currentTime:60,   //验证码倒计时
-    smsText:'获取验证码',
     imgUrl: '/images/default-avatar.png'
   },
   /**
@@ -65,9 +62,6 @@ Page({
       mobile: {
         required: true,
         tel:true
-      },
-      codeNo: {
-        required: true
       }
     }
     const messages = {
@@ -77,9 +71,6 @@ Page({
       mobile: {
         required:'请填写手机号',
         tel:'请填写正确的手机号'
-      },
-      codeNo: {
-        required: '请填写验证码'
       }
     }
     this.WxValidate = new WxValidate(rules,messages)
@@ -102,62 +93,6 @@ Page({
     this.setData({
       mobile: e.detail.value
     })
-  },
-  //发送验证码
-  sendCode: function () {
-    var that = this;
-    if(!that.data.mobile){
-        common.showModel('请输入手机号');
-        return;  
-    }else{
-        //将按钮禁止
-        that.setData({
-            disabled: true
-        })
-      wx.request({
-        url: app.globalData.web_path + '/bc/'+app.globalData.appId+'/BcUser/bcUserBuyerCode',
-        data: {
-          mobile: that.data.mobile
-        },
-        success: function (res) {
-          //验证码发送成功弹窗
-          if (res.data.data.status=='1'){
-              wx.showToast({
-                title: res.data.data.message,
-                icon:'none',
-                duration:2000
-              })
-
-            //倒计时
-            var currentTime = that.data.currentTime;
-            //设置一分钟的倒计时
-            var interval = setInterval(function () {
-              currentTime--; //每执行一次让倒计时秒数减一
-              that.setData({
-                smsText: currentTime + 's', //按钮文字变成倒计时对应秒数
-              })
-              //如果当秒数小于等于0时 停止计时器 且按钮文字变成重新发送 且按钮变成可用状态 倒计时的秒数也要恢复成默认秒数 即让获取验证码的按钮恢复到初始化状态只改变按钮文字
-              if (currentTime <= 0) {
-                clearInterval(interval)
-                that.setData({
-                  smsText:'获取验证码',
-                  currentTime: 60,
-                  disabled: false,
-                })
-              }
-            }, 1000);
-          }else{
-              wx.showToast({
-                title: res.data.data.message,
-                icon:'none',
-                duration:2000
-              })
-          }
-        },
-        fail: function (res) {
-        }
-      })
-    }
   },
   //选择部门
   bindPickerChange: function (e) {
@@ -185,55 +120,34 @@ Page({
           showCancel: false  //去掉取消按钮
         });
       }else{
+          // 单位内部饭堂无需短信验证, 直接注册
           wx.showLoading({
               title: '注册中',
               mask:true
           });
+          wx.setStorageSync('userDepartmentName', userDepartmentName);
           wx.request({
-              url: app.globalData.web_path + '/bc/'+app.globalData.appId+'/BcUser/bcUserValiCode',
+              url: app.globalData.web_path + '/bc/'+app.globalData.appId+'/BcUser/save',
               data: {
+                  name: e.detail.value.name,
+                  userDepartmentId: e.detail.value.userDepartmentId,
                   mobile: e.detail.value.mobile,
-                  codeNo: e.detail.value.codeNo
+                  openid: wx.getStorageSync('openid')
               },
+              header: app.globalData.header,
               success: function (res) {
-                  //console.log("验证结果：", res.data.data.message);
-                  if (res.data.data.status == '1') {
-                      wx.setStorageSync('userDepartmentName', userDepartmentName);
-                      wx.request({
-                          url: app.globalData.web_path + '/bc/'+app.globalData.appId+'/BcUser/save',
-                          data: {
-                              name: e.detail.value.name,
-                              userDepartmentId: e.detail.value.userDepartmentId,
-                              mobile: e.detail.value.mobile,
-                              openid: wx.getStorageSync('openid')
-                          },
-                          header: app.globalData.header,
-                          success: function (res) {
-                              console.log('RES-->',res);
-                              console.log('TOKEN:--->',res.data.data.Token);
-                              wx.setStorageSync('nickName', e.detail.value.name);
-                              //将Token 放入缓存中
-                              if(res.data.data.Token){
-                                  wx.setStorageSync('Token', res.data.data.Token);
-                              }
-                              wx.hideLoading();
-                              wx.navigateBack({
-                                  url: '/pages/index/index'
-                              })
-                          },
-                          fail: function (res) {
-                          }
-                      })
-                  } else { //弹出提示
-                      wx.showToast({
-                          title: res.data.data.message,
-                          icon: 'none',
-                          duration: 2000
-                      })
+                  wx.setStorageSync('nickName', e.detail.value.name);
+                  //将Token 放入缓存中
+                  if(res.data.data && res.data.data.Token){
+                      wx.setStorageSync('Token', res.data.data.Token);
                   }
+                  wx.hideLoading();
+                  wx.navigateBack({
+                      url: '/pages/index/index'
+                  })
               },
               fail: function (res) {
-
+                  wx.hideLoading();
               }
           })
       }

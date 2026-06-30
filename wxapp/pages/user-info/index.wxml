@@ -31,17 +31,6 @@
                 <view class="cell__value flex-item">
                     <input type='number' name="mobile" value="{{form.mobile}}" placeholder="请填写你的手机号码" placeholder-class="placeholder-class" maxlength="11"  bindinput="getPhone"/>
                 </view>
-                <view class="field__button">
-                    <button bindtap="sendCode" disabled='{{disabled}}'>{{smsText}}</button>
-                </view>
-            </view>
-            <view class="cell field flex">
-                <view class="field__left-icon">
-                    <image src="../../images/icon/icon-safety.png" />
-                </view>
-                <view class="cell__value flex-item">
-                    <input type="number" name="codeNo" value="{{form.codeNo}}" placeholder="请输入验证码" placeholder-class="placeholder-class"  maxlength="6"/>
-                </view>
             </view>
         </view>
 
