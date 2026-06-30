@@ -21,4 +21,11 @@ public interface BcConfigRepository extends JpaRepository<BcConfig,Long> {
      * @return
      */
     BcConfig  findByAppIdAndId(String appId,Long id);
+
+    /**
+     * 根据appId 获取全部配置(正常每个appId只一条; 用列表防止历史脏数据导致 NonUniqueResult)
+     * @param appId
+     * @return
+     */
+    List<BcConfig> findAllByAppIdOrderByIdAsc(String appId);
 }

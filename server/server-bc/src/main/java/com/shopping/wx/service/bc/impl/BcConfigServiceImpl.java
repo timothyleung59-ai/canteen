@@ -46,12 +46,17 @@ public class BcConfigServiceImpl extends BaseServiceImpl<BcConfig,Long> implemen
     @Override
     public ActionResult saveOrUpdate(String appId,BcConfig config,String imgUrlList) throws Exception {
         config.setAppId(appId);
-        BcConfig cfg =this.bcConfigRepository.findByAppIdAndId(appId,config.getId());
-        //保存
-        if(cfg==null){
+        // 按 appId upsert: 每个 appId 只应有一条配置。用列表读取防止历史脏数据(多行)导致 NonUniqueResult。
+        List<BcConfig> existList = this.bcConfigRepository.findAllByAppIdOrderByIdAsc(appId);
+        if(existList==null || existList.isEmpty()){
             this.save(config);
-        }else{ //更新
+        }else{
+            config.setId(existList.get(0).getId()); //复用首行 -> 更新
             this.update(config);
+            //清理多余的脏数据行
+            for(int i=1;i<existList.size();i++){
+                this.bcConfigRepository.delete(existList.get(i));
+            }
         }
         //保存Banner
         if(CommUtils.isNotNull(imgUrlList)){
