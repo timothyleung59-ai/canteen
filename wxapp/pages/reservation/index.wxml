@@ -22,6 +22,10 @@
                 </view>
             </view>
         </view>
+        <view class="quick-bar">
+            <button class="quick-btn" size="mini" bindtap="reserveWeek">报本周</button>
+            <button class="quick-btn" size="mini" bindtap="reserveMonth">报本月</button>
+        </view>
         <view class="delete">长按可删除预约记录</view>
     </view>
 

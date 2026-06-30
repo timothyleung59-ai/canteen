@@ -46,6 +46,94 @@ Page({
         })
     },
     /**
+     * 批量预订快捷键: 报本周 / 报本月
+     */
+    reserveWeek: function () { this.batchReserve('week'); },
+    reserveMonth: function () { this.batchReserve('month'); },
+    _pad2: function (n) { return n < 10 ? '0' + n : '' + n; },
+    _fmtDate: function (d) { return d.getFullYear() + '-' + this._pad2(d.getMonth() + 1) + '-' + this._pad2(d.getDate()); },
+    // 计算批量目标日期: 明天起到本周日/本月末, 跳周末(按设置)与当月已订/已报
+    _buildBatchDates: function (scope) {
+        const that = this;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const start = new Date(today); start.setDate(start.getDate() + 1);
+        let end;
+        if (scope === 'week') {
+            const daysToSun = (7 - today.getDay()) % 7; // 到本周日的天数
+            end = new Date(today); end.setDate(end.getDate() + daysToSun);
+        } else {
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 0); // 本月最后一天
+        }
+        const reserved = that.data.matchDateList || [];
+        const reported = that.data.allMealRecordList || [];
+        const dates = [];
+        const cur = new Date(start);
+        while (cur <= end) {
+            const dow = cur.getDay();
+            let skip = false;
+            if (dow === 6 && !that.data.saturdayCanDiner) skip = true;
+            if (dow === 0 && !that.data.sundayCanDiner) skip = true;
+            if (!skip && cur.getFullYear() === today.getFullYear() && cur.getMonth() === today.getMonth()) {
+                const dnum = '' + cur.getDate();
+                if (reserved.indexOf(dnum) >= 0 || reported.indexOf(dnum) >= 0) skip = true;
+            }
+            if (!skip) dates.push({ date: that._fmtDate(cur), week: common.getMyDay(new Date(cur.getTime())) });
+            cur.setDate(cur.getDate() + 1);
+        }
+        return dates;
+    },
+    batchReserve: function (scope) {
+        const that = this;
+        const Token = wx.getStorageSync('Token');
+        if (!Token) { common.showModel('请先在"我的"完成注册'); return; }
+        if (that._batching) return;
+        const dates = that._buildBatchDates(scope);
+        if (dates.length === 0) {
+            common.showModel(scope === 'week' ? '本周已无可预订的工作日' : '本月已无可预订的工作日');
+            return;
+        }
+        that._batching = true;
+        app.globalData.header.Token = Token;
+        const total = dates.length;
+        const result = { ok: 0, skip: 0, fail: 0 };
+        let i = 0;
+        const finish = function () {
+            wx.hideLoading();
+            that._batching = false;
+            wx.showModal({
+                title: '预订完成',
+                content: '成功 ' + result.ok + ' 天'
+                    + (result.skip ? '，跳过 ' + result.skip + ' 天(已订/已报)' : '')
+                    + (result.fail ? '，失败 ' + result.fail + ' 天' : ''),
+                showCancel: false
+            });
+            that.viewAllReservation();
+        };
+        const step = function () {
+            if (i >= total) { finish(); return; }
+            wx.showLoading({ title: '预订中 ' + (i + 1) + '/' + total, mask: true });
+            wx.request({
+                url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/bcReserveRecord/bcReserveRecordSave',
+                header: app.globalData.header,
+                data: { reserveTime: dates[i].date, reserveTimeWeek: dates[i].week },
+                success: function (res) {
+                    const code = res.data ? res.data.code : null;
+                    if (code === 1 || code === 2) { // 未激活 / 午餐未开启 -> 整批终止
+                        wx.hideLoading();
+                        that._batching = false;
+                        common.showModel((res.data && res.data.msg) || (code === 2 ? '中午报餐未开启' : '请联系管理员给予激活'));
+                        that.viewAllReservation();
+                        return;
+                    }
+                    if (code === 0) result.ok++; else result.skip++; // code 3 当天已订 等
+                    i++; step();
+                },
+                fail: function () { result.fail++; i++; step(); }
+            });
+        };
+        step();
+    },
+    /**
      * 将list 存放到预约记录 dateList中
      */
     pustData: function (data) {
