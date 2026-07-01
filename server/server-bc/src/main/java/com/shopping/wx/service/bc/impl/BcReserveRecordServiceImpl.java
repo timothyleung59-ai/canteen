@@ -12,6 +12,7 @@ import com.shopping.base.utils.CommUtils;
 import com.shopping.wx.constant.BcRecordCons;
 import com.shopping.wx.form.bc.BcReserveRecordAddForm;
 import com.shopping.wx.service.bc.BcConfigService;
+import com.shopping.wx.service.bc.BcRecordService;
 import com.shopping.wx.service.bc.BcReserveRecordService;
 import com.shopping.wx.service.bc.HolidayJudgeService;
 import lombok.extern.log4j.Log4j2;
@@ -19,9 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @anthor bin
@@ -42,6 +47,10 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
     BcConfigService bcConfigService;
     @Autowired
     HolidayJudgeService holidayJudgeService;
+    @Autowired
+    BcRecordService bcRecordService;
+
+    private static final String[] WEEK_NAMES = {"周日","周一","周二","周三","周四","周五","周六"};
 
     @Override
     public ActionResult bcReserveRecordSave(String appid,Long id,BcReserveRecordAddForm bcReserveRecordAddForm,int status) throws Exception {
@@ -74,30 +83,51 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
         if (!holidayJudgeService.isOpenDay(reserveDate, config)) {
             return ActionResult.error(2, "该日期不开餐(节假日/周末)");
         }
-        // L1: 预约去重——同用户同一天已预约则拒绝
+        // 预约直接就是正式报餐记录, 去重统一查 bc_record(不再有单独的预约表去重)
         String reserveDateStr = CommUtils.formatDate(reserveDate,"yyyy-MM-dd");
-        List<BcReserveRecord> exists = this.bcReserveRecordRepository.findByUserAndReserveDate(appid, id, reserveDateStr);
-        if (exists != null && !exists.isEmpty()) {
-            return ActionResult.error(3, "您当天已预约，请勿重复预约");
+        if (this.bcRecordRepository.getByUserIdAndDinTime(appid, id, reserveDateStr) != null) {
+            return ActionResult.error(3, "您当天已报餐，请勿重复预约");
         }
-        BcReserveRecord bcReserveRecord = new BcReserveRecord();
-        bcReserveRecord.setAddTime(new Date());
-        bcReserveRecord.setAppId(appid);
-        bcReserveRecord.setBcUserId(id);
-        bcReserveRecord.setReserveTime(reserveDate);
-        bcReserveRecord.setReserveTimeWeek(bcReserveRecordAddForm.getReserveTimeWeek());
-        this.save(bcReserveRecord);
-        return ActionResult.ok(bcReserveRecord);
+        BcRecord bcRecord = new BcRecord();
+        bcRecord.setAddTime(new Date());
+        bcRecord.setAppId(appid);
+        bcRecord.setUserId(id);
+        bcRecord.setBcType(BcRecordCons.BC_TYPE_NOON);
+        bcRecord.setBcChannel(BcRecordCons.BC_CHANNEL_ORDER);
+        bcRecord.setDinTime(reserveDate);
+        bcRecord.setHadEat(BcRecordCons.HAD_EAT_CANNEL);
+        this.bcRecordRepository.save(bcRecord);
+        return ActionResult.ok(bcRecord);
     }
     @Override
-    public List<BcReserveRecord> getBcReserveRecordList(Long id, String appid) throws Exception {
-        return this.bcReserveRecordRepository.getBcReserveRecordList(id,appid);
+    public List<Map<String,Object>> getBcReserveRecordList(Long id, String appid) throws Exception {
+        List<BcRecord> list = this.bcRecordRepository.findFutureByUser(appid, id, new Date());
+        return toReserveViewList(list);
     }
 
     @Override
     public ActionResult deleteBcReserveRecordById(String appId, Long bcUserId, Long id) throws Exception {
-        Integer delResult = this.bcReserveRecordRepository.deleteBcReserveRecordByAppIdAndBcUserIdAndReserveTime(appId,bcUserId,id);
-        return ActionResult.ok(delResult);
+        // 取消预约 = 取消报餐, 复用同一套校验(已就餐/历史日期不可取消), 不重复实现
+        return this.bcRecordService.deleteBcRecordById(appId, bcUserId, id);
+    }
+
+    /**
+     * BcRecord 列表 -> 小程序预订页期望的字段格式(id/reserveTime/reserveTimeWeek), 保持接口路径/
+     * 返回字段不变, 前端不用改代码
+     */
+    private List<Map<String,Object>> toReserveViewList(List<BcRecord> list) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<Map<String,Object>> result = new ArrayList<>();
+        for (BcRecord r : list) {
+            Map<String,Object> m = new HashMap<>();
+            m.put("id", r.getId());
+            m.put("reserveTime", sdf.format(r.getDinTime()));
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(r.getDinTime());
+            m.put("reserveTimeWeek", WEEK_NAMES[cal.get(Calendar.DAY_OF_WEEK) - 1]);
+            result.add(m);
+        }
+        return result;
     }
 
     @Override
@@ -147,8 +177,9 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
     }
 
     @Override
-    public List<BcReserveRecord> getBcReserveRecordByYearAndMonth(String appId,Long bcUserId,String curYearMonth) throws Exception {
-        return this.bcReserveRecordRepository.getBcReserveRecordByCurYearAndMonth(appId,bcUserId,curYearMonth);
+    public List<Map<String,Object>> getBcReserveRecordByYearAndMonth(String appId,Long bcUserId,String curYearMonth) throws Exception {
+        List<BcRecord> list = this.bcRecordRepository.findByUserAndYearMonth(appId, bcUserId, curYearMonth);
+        return toReserveViewList(list);
     }
 
 }

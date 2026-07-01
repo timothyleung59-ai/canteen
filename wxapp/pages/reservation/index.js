@@ -94,7 +94,9 @@ Page({
                     url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/bcReserveRecord/deleteBcReserveRecord',
                     header: app.globalData.header,
                     data: { id: targets[i].id },
-                    success: function () { ok++; i++; step(); },
+                    // 取消预约现在复用"取消报餐"的服务端校验(已就餐/历史日期不可取消), 必须看
+                    // code 是否真的是0, 不能假设 success 回调=取消成功(参考之前 CancellMeal 的坑)
+                    success: function (res) { if (res.data && res.data.code === 0) ok++; else fail++; i++; step(); },
                     fail: function () { fail++; i++; step(); }
                 });
             };

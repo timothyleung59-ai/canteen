@@ -48,7 +48,7 @@ public class BcReserveRecordController {
             Map<String,Object> params= new HashMap<>();
             params.put("bcUserId",bcUser.getId());
             params.put("appId",appid);
-            List<BcReserveRecord> bcReserveRecordList = this.bcReserveRecordService.getBcReserveRecordList(bcUser.getId(),appid);
+            List<Map<String,Object>> bcReserveRecordList = this.bcReserveRecordService.getBcReserveRecordList(bcUser.getId(),appid);
             return ActionResult.ok(bcReserveRecordList);
         } catch (Exception e) {
             log.error("查询预约记录失败",e);
@@ -96,7 +96,7 @@ public class BcReserveRecordController {
     @GetMapping("/getBcReserveRecordListByCurYearAndCurMonth")
     public ActionResult getBcReserveRecordListByCurYearAndCurMonth(@PathVariable String appid,@CurrentBcUser BcUser bcUser,String curYearMonth){
         try {
-            List<BcReserveRecord> bcReserveRecordList = this.bcReserveRecordService.getBcReserveRecordByYearAndMonth(appid,bcUser.getId(),curYearMonth);
+            List<Map<String,Object>> bcReserveRecordList = this.bcReserveRecordService.getBcReserveRecordByYearAndMonth(appid,bcUser.getId(),curYearMonth);
             return ActionResult.ok(bcReserveRecordList);
         }catch (Exception e){
             log.error("获取预约记录异常",e);
