@@ -42,6 +42,12 @@ Page({
     },
     fetchList: function (curIndex) {
         const that = this;
+        const Token = wx.getStorageSync('Token');
+        if (!Token) {
+            wx.showToast({ title: '请先在"我的"完成注册', icon: 'none' });
+            return;
+        }
+        app.globalData.header.Token = Token;
         that.setData({ loading: true, list: [] });
         wx.request({
             url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/BcRecord/getBcRecordListByDinTime',
