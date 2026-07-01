@@ -2,7 +2,7 @@
 App({
     globalData: {
         // 后端 HTTPS 域名(结尾不带斜杠)，须加入小程序后台 request 合法域名
-        web_path: "https://aidio.site",
+        web_path: "https://canteen.zsess.net",
         header: {
             Token: "",
             Cookie: "",

@@ -35,13 +35,22 @@
 - admin-web（Vue3 后台）逐页实测通过
 - 小程序去品牌化为「饭堂报餐」；补全了原仓库缺失的全部图标
 
+### ✅ 域名 / HTTPS（2026-07-01 更新）
+
+- **当前主力域名：`canteen.zsess.net`**（已备案，DNS 走阿里云直连解析，不经过 Cloudflare）
+  - 源站自己用 Let's Encrypt 签发真实证书（因为没有 CF 代理帮忙终结 HTTPS）
+  - 证书自动续期：crontab `0 3 * * * certbot renew --quiet --deploy-hook "nginx -s reload"`（这台机器之前完全没有续期机制，部署时新加的，证书 90 天到期，千万别删这条 cron）
+  - nginx 配置模板：`server/deploy/nginx-canteen.zsess.net.conf`
+  - 后端 `.env` 的 `BASE_PATH`/`APP_PATH` 已指向这个域名
+  - 小程序 `wxapp/app.js` 的 `web_path` 已指向这个域名（**改完还需在 mp.weixin.qq.com 重新上传+提审+发布**才对线上用户生效；微信后台的 request 合法域名也要同步换成这个）
+- 旧域名 `aidio.site`（Cloudflare 橙云代理，源站只监听 :80）**仍保留可用**，nginx 配置在 `server/deploy/nginx-aidio.site.conf`，两个域名并存，未来若确认不再用可以下线
+
 ### 待做
 
-1. **Nginx 反代 + 域名 + HTTPS**（需提供域名和证书）
-2. **admin-web 构建 + 部署**（`npm run build` → Nginx 静态托管）
-3. 填入真实 WX_APPID / WX_SECRET
-4. 导入种子数据到生产 MySQL
-5. 小程序实跑验证（开发者工具）
+1. 微信公众平台 request 合法域名换成 `canteen.zsess.net`，小程序重新上传+提审+发布
+2. 填入真实 WX_APPID / WX_SECRET（如果还没填）
+3. 导入种子数据到生产 MySQL（如果还没导）
+4. 小程序在开发者工具/真机里完整跑一遍（报餐/预订/取消/节假日停餐等，目前只做过静态语法检查）
 
 ---
 
