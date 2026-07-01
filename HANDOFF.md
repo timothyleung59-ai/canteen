@@ -43,7 +43,8 @@
   - nginx 配置模板：`server/deploy/nginx-canteen.zsess.net.conf`
   - 后端 `.env` 的 `BASE_PATH`/`APP_PATH` 已指向这个域名
   - 小程序 `wxapp/app.js` 的 `web_path` 已指向这个域名（**改完还需在 mp.weixin.qq.com 重新上传+提审+发布**才对线上用户生效；微信后台的 request 合法域名也要同步换成这个）
-- 旧域名 `aidio.site`（Cloudflare 橙云代理，源站只监听 :80）**仍保留可用**，nginx 配置在 `server/deploy/nginx-aidio.site.conf`，两个域名并存，未来若确认不再用可以下线
+- 旧域名 `aidio.site` **已于 2026-07-01 下线**：nginx 配置从 `/etc/nginx/conf.d/` 移到了 `/etc/nginx/conf.d.disabled/canteen-aidio.conf.bak`（未删除，可随时恢复）。仓库里的 `server/deploy/nginx-aidio.site.conf` 仅作历史参考。
+  - ⚠️ 直接访问 `aidio.site` 现在不会 404，而是落到这台共享服务器的默认 server（另一个项目 study-agent），因为 Cloudflare 上的 DNS 记录还在代理——**要彻底下线需要去 Cloudflare 后台删掉/暂停这个域名的代理**，这一步只能人工做
 
 ### 待做
 
