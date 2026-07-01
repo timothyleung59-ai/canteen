@@ -35,6 +35,7 @@ services:
       redis:
         condition: service_started
     environment:
+      TZ: Asia/Shanghai
       SERVER_PORT: "8088"
       BASE_PATH: http://localhost:8088/
       APP_PATH: http://localhost:8088/

@@ -46,6 +46,7 @@ services:
       redis:
         condition: service_started
     environment:
+      TZ: Asia/Shanghai
       SERVER_PORT: "8088"
       BASE_PATH: ${BASE_PATH}
       APP_PATH: ${APP_PATH}
