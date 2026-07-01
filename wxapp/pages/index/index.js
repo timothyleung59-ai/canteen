@@ -307,15 +307,19 @@ Page({
             url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/config/getConfig',
             header: app.globalData.header,
             success: function(res) {
-                let lunchTimeArr = res.data.data.lunchOrderTime.split("-");
+                const d = res.data.data || {};
+                // 后台配的是单一截止时间点(如 "11:45"), 不是"开始-结束"区间。
+                // lunchStartTime/lunchEndTime 语义上是同一个点: 过了它, "报今天"截止,
+                // 同时"现在到零点"这段自动转成"报明天"——都指向同一个值即可, 不能再按
+                // "-" 拆成两段(旧代码这么写会导致 lunchEndTime=undefined, 报餐按钮永远禁用)。
                 that.setData({
-                    lunchOrderTime: res.data.data.lunchOrderTime,
-                    saturdayCanDiner: res.data.data.saturdayCanDiner,
-                    sundayCanDiner: res.data.data.sundayCanDiner,
+                    lunchOrderTime: d.lunchOrderTime,
+                    saturdayCanDiner: d.saturdayCanDiner,
+                    sundayCanDiner: d.sundayCanDiner,
                     // 后端已合并"自动节假日(含调休) + 手动停餐/开餐 + 周末规则"算出最终结果, 前端直接查表即可
-                    closedDatesList: res.data.data.resolvedClosedDates || [],
-                    lunchStartTime: lunchTimeArr[0],
-                    lunchEndTime: lunchTimeArr[1]
+                    closedDatesList: d.resolvedClosedDates || [],
+                    lunchStartTime: d.lunchOrderTime,
+                    lunchEndTime: d.lunchOrderTime
                 })
             }
         })
@@ -579,7 +583,7 @@ Page({
             let times = time.split(":");
             let timesHour = times[0];
             let timesMinute = times[1];
-            let timesSecond = times[2];
+            let timesSecond = times[2] || 0; // 截止时间是 "HH:mm" 两段式(无秒), 缺省按0秒算, 否则 parseInt(undefined) 是 NaN
             let countSecond = (parseInt(timesHour) * 60 * 60) + (parseInt(timesMinute) * 60 ) + parseInt(timesSecond)
             return countSecond;
         }
