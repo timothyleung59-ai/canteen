@@ -49,10 +49,12 @@ Page({
         })
     },
     /**
-     * 批量预订快捷键: 报本周 / 报本月
+     * 批量预订快捷键: 报本周 / 报下周 / 报本月 / 报下月
      */
     reserveWeek: function () { this.batchReserve('week'); },
+    reserveNextWeek: function () { this.batchReserve('nextWeek'); },
     reserveMonth: function () { this.batchReserve('month'); },
+    reserveNextMonth: function () { this.batchReserve('nextMonth'); },
     cancelWeek: function () { this.batchCancel('week'); },
     cancelMonth: function () { this.batchCancel('month'); },
     // 批量取消: 取消范围内(本周/本月剩余)的已有预约
@@ -108,16 +110,24 @@ Page({
         const list = this.data.closedDatesList || [];
         return list.indexOf(dateStr) >= 0;
     },
-    // 计算批量目标日期: 明天起到本周日/本月末, 跳停餐日与当月已订/已报
+    // 计算批量目标日期: 本周/本月(明天起到周期末) 或 下周/下月(完整周期), 跳停餐日与当月已订/已报
     _buildBatchDates: function (scope) {
         const that = this;
         const today = new Date(); today.setHours(0, 0, 0, 0);
-        const start = new Date(today); start.setDate(start.getDate() + 1);
-        let end;
+        let start, end;
         if (scope === 'week') {
+            start = new Date(today); start.setDate(start.getDate() + 1);
             const daysToSun = (7 - today.getDay()) % 7; // 到本周日的天数
             end = new Date(today); end.setDate(end.getDate() + daysToSun);
+        } else if (scope === 'nextWeek') {
+            const daysToNextMon = (8 - today.getDay()) % 7 || 7; // 到下周一的天数
+            start = new Date(today); start.setDate(start.getDate() + daysToNextMon);
+            end = new Date(start); end.setDate(end.getDate() + 6); // 下周一 到 下周日
+        } else if (scope === 'nextMonth') {
+            start = new Date(today.getFullYear(), today.getMonth() + 1, 1); // 下月第一天
+            end = new Date(today.getFullYear(), today.getMonth() + 2, 0); // 下月最后一天
         } else {
+            start = new Date(today); start.setDate(start.getDate() + 1);
             end = new Date(today.getFullYear(), today.getMonth() + 1, 0); // 本月最后一天
         }
         const reserved = that.data.matchDateList || [];
@@ -143,7 +153,8 @@ Page({
         if (that._batching) return;
         const dates = that._buildBatchDates(scope);
         if (dates.length === 0) {
-            common.showModel(scope === 'week' ? '本周已无可预订的工作日' : '本月已无可预订的工作日');
+            const scopeName = { week: '本周', nextWeek: '下周', month: '本月', nextMonth: '下月' }[scope] || '';
+            common.showModel(scopeName + '已无可预订的工作日');
             return;
         }
         that._batching = true;

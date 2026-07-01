@@ -22,7 +22,7 @@
 .quick-btn--cancel{background:#fff;color:#dd3e41;border:1rpx solid #dd3e41;}
 .quick-btn::after{border:none;}
 
-.ordering-lists{padding: 470px 24rpx 30rpx;min-height: 100vh;box-sizing: border-box;}
+.ordering-lists{padding: 530px 24rpx 30rpx;min-height: 100vh;box-sizing: border-box;}
 .ordering-item{background: white;border-radius: 6rpx;box-shadow: 0 0 10px rgba(0,0,0,0.1);padding: 0 40rpx;height: 100rpx;line-height: 100rpx;font-size: 32rpx;color: #333;position: relative;margin-bottom: 30rpx;transition: all 0.3s;display:flex;align-items:center;justify-content:space-between;}
 .ordering-date{flex:1;}
 .item-del{color:#dd3e41;font-size:26rpx;line-height:52rpx;height:52rpx;padding:0 24rpx;border:1rpx solid #dd3e41;border-radius:26rpx;}
