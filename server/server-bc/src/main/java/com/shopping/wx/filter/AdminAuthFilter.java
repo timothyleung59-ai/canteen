@@ -33,6 +33,7 @@ public class AdminAuthFilter implements Filter {
             "/BcUser/delete",
             "/BcUser/export",
             "/BcUser/editUserDepartmentId",
+            "/BcUser/updateAdminById",
             "/BcUserDepartment/getDepartmentPageList",
             "/BcUserDepartment/save",
             "/BcUserDepartment/updateName",
@@ -47,9 +48,10 @@ public class AdminAuthFilter implements Filter {
             "/config/saveOrUpdate",
             "/config/holidays",
             "/config/syncHolidays"
-            // 注意: /BcRecord/confirmEat(确认就餐/核销) 故意不在此列——小程序统计页的"确认就餐"
-            // 按钮由普通登录用户(用 Token 头, 非 Admin-Token)调用, 加入会 401 打断该功能。
-            // 若要收紧"任何用户都能核销"这一弱点, 需单独做产品决策(改后台/硬件核销或加 @CurrentBcUser)。
+            // 注意: /BcRecord/getBcRecordListByDinTime、/confirmEat、/getTotalRecordByDinTime
+            // 故意不在此列——这几个是小程序管理员查看报餐名单页面调用的接口, 用的是普通登录
+            // 用户 Token 头(非 Admin-Token), 权限校验改在各自 controller 方法里用 @CurrentBcUser
+            // 判断 bcUser.isAdmin(), 不走这个基于 Admin-Token 的过滤器。
     );
 
     @Override

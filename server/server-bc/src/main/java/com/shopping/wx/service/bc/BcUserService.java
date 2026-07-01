@@ -89,4 +89,14 @@ public interface BcUserService extends IBaseService<BcUser,Long> {
      * @throws Exception
      */
     int softDeleteById(String appId,Long id) throws Exception;
+
+    /**
+     * 设置/取消员工的"管理员"身份(小程序端查看报餐名单权限)
+     * @param appId
+     * @param id
+     * @param admin
+     * @return
+     * @throws Exception
+     */
+    int updateAdminById(String appId,Long id,boolean admin) throws Exception;
 }

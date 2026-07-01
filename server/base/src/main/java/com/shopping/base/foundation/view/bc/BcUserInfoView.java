@@ -19,4 +19,7 @@ public class BcUserInfoView extends BeanView<BcUser> implements Serializable {
 
     /** 所属部门 */
     private Long userDepartmentId ;
+
+    /** 是否管理员(小程序端查看报餐名单权限) */
+    private boolean admin ;
 }

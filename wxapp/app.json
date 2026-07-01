@@ -2,7 +2,8 @@
     "pages": [
         "pages/index/index",
         "pages/reservation/index",
-        "pages/user-info/index"
+        "pages/user-info/index",
+        "pages/admin-meals/index"
     ],
     "window": {
         "backgroundTextStyle": "light",

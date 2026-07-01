@@ -1,0 +1,17 @@
+<view class="container">
+    <scroll-view class="date-row" scroll-x="true">
+        <view wx:for="{{dateList}}" wx:key="curIndex" class="date-pill {{curIndex==item.curIndex?'active':''}}" data-index="{{item.curIndex}}" bindtap="selectDate">
+            <view class="date-pill__week">{{item.week}}</view>
+            <view class="date-pill__day">{{item.month}}-{{item.day}}</view>
+        </view>
+    </scroll-view>
+
+    <view class="list">
+        <view wx:if="{{!loading && list.length===0}}" class="empty">{{emptyText}}</view>
+        <view wx:for="{{list}}" wx:key="id" class="record-item flex">
+            <view class="record-item__name">{{item.name}}</view>
+            <view class="record-item__dept flex-item">{{item.deptName}}</view>
+            <view class="record-item__eat {{item.hadEat==1?'eaten':''}}">{{item.hadEat==1?'已就餐':'未就餐'}}</view>
+        </view>
+    </view>
+</view>

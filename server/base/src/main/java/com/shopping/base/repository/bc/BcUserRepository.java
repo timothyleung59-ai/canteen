@@ -30,4 +30,11 @@ public interface BcUserRepository extends JpaRepository<BcUser,Long> {
     @Modifying
     @Query("update BcUser set deleteStatus=true where appId =:appId and id=:id")
     int softDeleteById(@Param("appId")String appId,@Param("id")Long id);
+
+    /**
+     * 设置/取消员工的"管理员"身份(小程序端查看报餐名单权限)
+     */
+    @Modifying
+    @Query("update BcUser set admin=:admin where appId =:appId and id=:id")
+    int updateAdminById(@Param("appId")String appId,@Param("id")Long id,@Param("admin")boolean admin);
 }

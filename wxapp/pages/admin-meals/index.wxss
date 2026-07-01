@@ -1,0 +1,15 @@
+.container{padding: 24rpx;box-sizing: border-box;}
+
+.date-row{white-space: nowrap;}
+.date-pill{display: inline-block;text-align: center;padding: 12rpx 20rpx;margin-right: 16rpx;border-radius: 10rpx;background: #f5f5f5;color: #666;}
+.date-pill.active{background: #ff7e00;color: #fff;}
+.date-pill__week{font-size: 24rpx;}
+.date-pill__day{font-size: 22rpx;margin-top: 4rpx;}
+
+.list{margin-top: 30rpx;}
+.empty{text-align: center;color: #999;font-size: 26rpx;padding: 80rpx 0;}
+.record-item{padding: 20rpx 0;border-bottom: 1rpx solid #eee;font-size: 28rpx;}
+.record-item__name{width: 160rpx;}
+.record-item__dept{color: #999;font-size: 26rpx;}
+.record-item__eat{color: #999;}
+.record-item__eat.eaten{color: #ff7e00;}

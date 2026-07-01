@@ -22,6 +22,10 @@
         </div>
         <div class="mobile-card-row"><span class="k">手机号</span><span class="v">{{ row.mobile }}</span></div>
         <div class="mobile-card-row"><span class="k">部门</span><span class="v">{{ row.department || '未分配' }}</span></div>
+        <div class="mobile-card-row"><span class="k">管理员</span><span class="v">
+          <el-switch :model-value="row.is_admin === '1'" active-text="是" inactive-text="否"
+            inline-prompt @change="(v) => toggleAdmin(row, v)" />
+        </span></div>
         <div class="mobile-card-actions">
           <el-button size="small" :icon="Switch" @click="openDept(row)">调部门</el-button>
           <el-button size="small" type="danger" :icon="Delete" @click="remove(row)">删除</el-button>
@@ -40,6 +44,12 @@
         <template #default="{ row }">
           <el-switch :model-value="row.status === 1" active-text="已激活" inactive-text="待审核"
             inline-prompt @change="(v) => toggleStatus(row, v)" />
+        </template>
+      </el-table-column>
+      <el-table-column label="管理员" width="110">
+        <template #default="{ row }">
+          <el-switch :model-value="row.is_admin === '1'" active-text="是" inactive-text="否"
+            inline-prompt @change="(v) => toggleAdmin(row, v)" />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="200" fixed="right">
@@ -81,6 +91,7 @@ import { Search, Refresh, Download, Delete, Switch } from '@element-plus/icons-v
 import {
   getUserPageList,
   updateUserStatus,
+  updateUserAdmin,
   deleteUser,
   editUserDepartment,
   exportUsers,
@@ -147,6 +158,16 @@ async function toggleStatus(row, val) {
     await updateUserStatus(row.id, val)
     row.status = val ? 1 : 0
     ElMessage.success(val ? '已激活' : '已设为待审核')
+  } catch (e) {
+    /* 已提示 */
+  }
+}
+
+async function toggleAdmin(row, val) {
+  try {
+    await updateUserAdmin(row.id, val)
+    row.is_admin = val ? '1' : '0'
+    ElMessage.success(val ? '已设为管理员' : '已取消管理员')
   } catch (e) {
     /* 已提示 */
   }

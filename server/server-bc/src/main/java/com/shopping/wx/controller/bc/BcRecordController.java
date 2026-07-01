@@ -76,8 +76,11 @@ public class BcRecordController {
 
     @ApiOperation(value = "查询报餐总人数",tags={"BcRecord"},notes = "")
     @GetMapping(value = "/getTotalRecordByDinTime")
-    public ActionResult getTotalRecord(@PathVariable String appid,int curIndex){
+    public ActionResult getTotalRecord(@PathVariable String appid,@CurrentBcUser BcUser bcUser,int curIndex){
         try{
+            if(!bcUser.isAdmin()){
+                return ActionResult.error("无权限");
+            }
             String date = CommUtils.formatDate(CommUtils.getDateAfter(new Date(),curIndex),"yyyy-MM-dd");
             int  totalNum = this.bcRecordService.getTotalRecordByDinTime(appid,date);
             return  ActionResult.ok(totalNum);
@@ -100,8 +103,11 @@ public class BcRecordController {
 
     @ApiOperation(value ="获取报餐信息列表",tags = {"BcRecord"},notes = "")
     @GetMapping(value = "/getBcRecordListByDinTime")
-    public  ActionResult  getBcRecordListByDinTime(@PathVariable String  appid,Long deptId,int curIndex,int currentPage,int pageSize){
+    public  ActionResult  getBcRecordListByDinTime(@PathVariable String  appid,@CurrentBcUser BcUser bcUser,Long deptId,int curIndex,int currentPage,int pageSize){
         try{
+            if(!bcUser.isAdmin()){
+                return ActionResult.error("无权限");
+            }
             String date = CommUtils.formatDate(CommUtils.getDateAfter(new Date(),curIndex),"yyyy-MM-dd");
             List<Map<String, Object>> bcRecordList = this.bcRecordService.getBcRecordListByDinTime(appid,date,deptId,currentPage,pageSize);
             return ActionResult.ok(bcRecordList);
@@ -173,8 +179,11 @@ public class BcRecordController {
 
     @ApiOperation(value ="确认报餐",tags = {"BcRecord"},notes = "")
     @GetMapping("/confirmEat")
-    public  ActionResult confirmEat(@PathVariable String appid,Long id){
+    public  ActionResult confirmEat(@PathVariable String appid,@CurrentBcUser BcUser bcUser,Long id){
         try{
+            if(!bcUser.isAdmin()){
+                return ActionResult.error("无权限");
+            }
             int result = this.bcRecordService.updateHadEatById(BcRecordCons.HAD_EAT_CONFIRM,appid,id);
             return ActionResult.ok(result);
         }catch (Exception e){

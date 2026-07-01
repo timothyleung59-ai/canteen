@@ -127,6 +127,7 @@ CREATE TABLE `bc_user` (
   `user_department_id` bigint(20) DEFAULT NULL COMMENT '所属部门',
   `mobile` varchar(32) DEFAULT NULL COMMENT '手机号',
   `status` int(11) DEFAULT NULL COMMENT '状态;0:未激活  1:激活',
+  `is_admin` varchar(1) DEFAULT '0' COMMENT '是否管理员(小程序端查看报餐名单权限)',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COMMENT='报餐用户;';
 

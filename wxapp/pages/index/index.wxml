@@ -8,6 +8,7 @@
         <view class="today flex">
             <image class="icon-clander" src="../../images/icon/icon-clander.png" lazy-load mode="widthFix" />
             <text>{{cur_year}}年{{cur_month}}月{{cur_day}}日</text>
+            <image wx:if="{{isAdmin}}" class="icon-admin-entry" src="../../images/icon/icon-statistics.png" bindtap="goToAdminMeals" mode="widthFix" />
         </view>
     </view>
 

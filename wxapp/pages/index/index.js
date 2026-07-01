@@ -12,6 +12,7 @@ Page({
         isShowEmpower: false,
         animated: false,
         nickName: '',
+        isAdmin: false,
         cur_hour: '00',
         cur_minute: '00',
         cur_second: '00',
@@ -75,6 +76,9 @@ Page({
                 userDepartmentName: userDepartmentName
             })
         }
+        that.setData({
+            isAdmin: !!wx.getStorageSync('isAdmin')
+        })
     },
     onHide:function(){
         let e = this;
@@ -232,6 +236,7 @@ Page({
                                 wx.setStorageSync('Token', res.data.data.Token);
                                 wx.setStorageSync('user', res.data.data.user);
                                 wx.setStorageSync('userDepartmentName', res.data.data.userDepartmentName);
+                                wx.setStorageSync('isAdmin', !!(res.data.data.user && res.data.data.user.admin));
                                 var name = wx.getStorageSync('user').name;
                                 var deptName = wx.getStorageSync('userDepartmentName');
                                 if (name) {
@@ -239,6 +244,9 @@ Page({
                                         nickName: name
                                     })
                                 }
+                                that.setData({
+                                    isAdmin: !!(res.data.data.user && res.data.data.user.admin)
+                                })
                                 if (deptName) {
                                     that.setData({
                                         userDepartmentName: deptName
@@ -274,6 +282,14 @@ Page({
                 }
             }
         });
+    },
+    /**
+     * 管理员入口: 查看报餐名单
+     */
+    goToAdminMeals: function() {
+        wx.navigateTo({
+            url: '/pages/admin-meals/index',
+        })
     },
     /**
      * 查询广告图片列表

@@ -80,7 +80,7 @@ public class BcUserServiceImpl  extends BaseServiceImpl<BcUser,Long> implements 
     public List<Map<String, Object>> getUserPageList(BcUserQueryForm queryForm) throws Exception {
         Map<String,Object> map = new HashMap<>(1);
         map.put("appId",queryForm.getAppId());
-        String sql ="select  u.id,u.name,u.mobile,d.name as department,u.status,u.user_department_id from bc_user u"+
+        String sql ="select  u.id,u.name,u.mobile,d.name as department,u.status,u.user_department_id,u.is_admin from bc_user u"+
                 " left join bc_user_department d on(u.app_id= d.app_id and u.user_department_id =d.id)"+
                 " where u.app_id =:appId and u.deletestatus !='1'";
         if(CommUtils.isNotNull(queryForm.getName())){
@@ -177,6 +177,11 @@ public class BcUserServiceImpl  extends BaseServiceImpl<BcUser,Long> implements 
     @Override
     public int softDeleteById(String appId, Long id) throws Exception {
         return this.bcUserRepository.softDeleteById(appId,id);
+    }
+
+    @Override
+    public int updateAdminById(String appId, Long id, boolean admin) throws Exception {
+        return this.bcUserRepository.updateAdminById(appId,id,admin);
     }
 
 }

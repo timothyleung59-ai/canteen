@@ -53,6 +53,11 @@ export function updateUserStatus(id, isActive) {
     params: { id, isActive }
   })
 }
+export function updateUserAdmin(id, isAdmin) {
+  return request.post(`${base()}/BcUser/updateAdminById`, null, {
+    params: { id, isAdmin }
+  })
+}
 export function deleteUser(id) {
   return request.delete(`${base()}/BcUser/delete`, { params: { id } })
 }

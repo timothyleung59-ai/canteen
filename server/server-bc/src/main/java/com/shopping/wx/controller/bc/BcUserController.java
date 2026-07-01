@@ -228,4 +228,23 @@ public class BcUserController {
         }
         return ActionResult.error("服务器异常");
     }
+
+    /**
+     * 设置/取消员工的管理员身份(小程序端查看报餐名单权限)
+     * @param appid
+     * @param id
+     * @param isAdmin
+     * @return
+     */
+    @ApiOperation(value = "设置管理员", tags = {"BcUser"}, notes = "")
+    @PostMapping("/updateAdminById")
+    public ActionResult updateAdminById(@PathVariable String appid,Long id,Boolean isAdmin){
+        try{
+            int result = this.bcUserService.updateAdminById(appid,id,isAdmin);
+            return ActionResult.ok(result);
+        }catch(Exception e){
+            log.error("设置管理员异常",e);
+        }
+        return ActionResult.error("服务器异常");
+    }
 }

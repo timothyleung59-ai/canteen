@@ -30,4 +30,7 @@ public class BcUser extends IdEntity {
     private String mobile ;
     /** 状态;0:未激活  1:激活 */
     private Integer status ;
+    /** 是否管理员(小程序端查看报餐名单权限) */
+    @javax.persistence.Column(name = "is_admin")
+    private boolean admin ;
 }
