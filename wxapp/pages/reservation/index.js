@@ -49,7 +49,7 @@ Page({
         })
     },
     /**
-     * 批量预订快捷键: 报本周 / 报下周 / 报本月 / 报下月
+     * 批量预订快捷键: 报餐本周 / 报餐下周 / 报餐本月 / 报餐下月
      */
     reserveWeek: function () { this.batchReserve('week'); },
     reserveNextWeek: function () { this.batchReserve('nextWeek'); },
