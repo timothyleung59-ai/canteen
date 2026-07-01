@@ -11,5 +11,5 @@
 .record-item{padding: 20rpx 0;border-bottom: 1rpx solid #eee;font-size: 28rpx;}
 .record-item__name{width: 160rpx;}
 .record-item__dept{color: #999;font-size: 26rpx;}
-.record-item__eat{color: #999;}
-.record-item__eat.eaten{color: #ff7e00;}
+.record-item__eat{color: #999;padding: 6rpx 16rpx;border: 1rpx solid #ddd;border-radius: 6rpx;}
+.record-item__eat.eaten{color: #ff7e00;border-color: #ff7e00;}

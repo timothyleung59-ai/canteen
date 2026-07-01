@@ -4,7 +4,7 @@
 .user-info .user-branch{font-size: 24rpx;color: #999;margin-left: 8px;}
 .today{font-size: 26rpx;color: #999;}
 .icon-clander{width: 30rpx;margin-right: 14rpx;}
-.icon-admin-entry{width: 24rpx;margin-left: 16rpx;opacity: 0.55;}
+.icon-admin-entry{width: 40rpx;margin-left: 16rpx;opacity: 0.7;}
 
 .swiper{width: 702rpx;height: 300rpx;border-radius: 10rpx;overflow: hidden;margin: 0 auto;}
 .swiper image{width: 100%;height:100%; }

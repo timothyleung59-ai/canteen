@@ -69,5 +69,46 @@ Page({
                 that.setData({ loading: false });
             }
         });
+    },
+    /**
+     * 标记已就餐
+     */
+    markEaten: function (e) {
+        const that = this;
+        const index = e.currentTarget.dataset.index;
+        const item = that.data.list[index];
+        if (item.hadEat == 1) {
+            return;
+        }
+        wx.showModal({
+            title: '确认就餐',
+            content: '确认 ' + item.name + ' 已就餐?',
+            confirmText: '确认',
+            confirmColor: '#ff7e00',
+            success(res) {
+                if (res.confirm) {
+                    wx.request({
+                        url: app.globalData.web_path + '/bc/' + app.globalData.appId + '/BcRecord/confirmEat',
+                        data: { id: item.id },
+                        header: app.globalData.header,
+                        success: function (res) {
+                            if (res.data && res.data.code === 0 && res.data.data === 1) {
+                                const list = that.data.list;
+                                list[index].hadEat = 1;
+                                that.setData({ list: list });
+                            } else {
+                                wx.showToast({
+                                    title: (res.data && res.data.msg) || '操作失败',
+                                    icon: 'none'
+                                });
+                            }
+                        },
+                        fail: function () {
+                            wx.showToast({ title: '网络异常', icon: 'none' });
+                        }
+                    });
+                }
+            }
+        });
     }
 });
