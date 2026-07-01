@@ -609,6 +609,10 @@ Page({
                     common.showModel('中午报餐功能未开启');
                 }else if(res.data.code == 1){
                     common.showModel('请联系管理员给予激活');
+                }else if(res.data.code == 3){
+                    // 服务端去重: 当天已有报餐记录, 没有 data 字段, 不能再往下走"报餐成功"分支
+                    common.showModel(res.data.msg || '您当天已报餐，请勿重复报餐');
+                    that.valiBcRecord();
                 }else {
                     wx.showToast({
                         title: '报餐成功',
@@ -623,8 +627,8 @@ Page({
                     })
                 }
             },
-            fail: function(res) {
-                console.log("接口调用失败", res.data)
+            fail: function() {
+                common.showModel('网络异常，报餐失败，请重试');
             }
         });
     },
@@ -642,17 +646,26 @@ Page({
                     id: that.data.baoCanRecordId
                 },
                 success: function(res) {
-                    wx.showToast({
-                        title: '取消报餐成功',
-                        icon: 'success',
-                        duration: 2000
-                    });
-                    that.setData({
-                        mealOffer: '开始报餐',
-                        baoCanRecordId: '',
-                        baoCan: 0,
-                        select: 0
-                    });
+                    if (res.data && res.data.code === 0) {
+                        wx.showToast({
+                            title: '取消报餐成功',
+                            icon: 'success',
+                            duration: 2000
+                        });
+                        that.setData({
+                            mealOffer: '开始报餐',
+                            baoCanRecordId: '',
+                            baoCan: 0,
+                            select: 0
+                        });
+                    } else {
+                        // 后端拒绝了取消(已就餐/记录不存在/历史报餐等), 记录其实没删掉,
+                        // UI不能跟着乱改成"未报餐", 否则下次刷新又会变回"已报餐", 让人以为闹鬼
+                        common.showModel((res.data && res.data.msg) || '取消报餐失败');
+                    }
+                },
+                fail: function() {
+                    common.showModel('网络异常，取消报餐失败，请重试');
                 }
             })
         );
