@@ -21,7 +21,9 @@ import java.util.Date;
  * 中国法定节假日自动同步。
  * <p>
  * 数据源: https://github.com/NateScarlet/holiday-cn (社区在国务院公布节假日安排后 1-2 天内更新)。
- * 每天定时 + 启动时同步"今年"和"明年"两个年份, 写入 bc_holiday 表(全局共享, 不分 appId)。
+ * 每季度定时(1/1、4/1、7/1、10/1) + 启动时同步"今年"和"明年"两个年份, 写入 bc_holiday 表
+ * (全局共享, 不分 appId)。节假日安排本身极少临时变动, 无需每天同步; 管理员在后台有
+ * "立即同步"按钮可随时手动触发, 不必等到下个季度。
  * 网络失败只记日志, 不影响系统启动/运行——旧缓存数据 + 管理员手动覆盖仍然可用。
  */
 @Log4j2
@@ -40,9 +42,9 @@ public class HolidaySyncService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
-     * 每天凌晨 2:30 自动同步一次(国务院公布节假日安排 -> 社区更新数据 -> 本系统当天即可拿到)
+     * 每季度第一天(1/1、4/1、7/1、10/1)凌晨 2:30 自动同步一次
      */
-    @Scheduled(cron = "0 30 2 * * ?")
+    @Scheduled(cron = "0 30 2 1 1,4,7,10 ?")
     public void scheduledSync() {
         syncCurrentAndNextYear();
     }

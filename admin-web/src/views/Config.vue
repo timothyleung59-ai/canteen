@@ -37,7 +37,7 @@
       <el-form-item label="自动同步">
         <div>
           <el-button size="small" :loading="syncing" @click="onSync">立即同步</el-button>
-          <span class="hint">系统每天凌晨自动从公开节假日库同步一次，含调休补班安排</span>
+          <span class="hint">系统每季度自动从公开节假日库同步一次（含调休补班安排），如需立即更新可点击左侧按钮</span>
         </div>
         <div style="margin-top: 10px" v-loading="holidayLoading">
           <el-tag v-for="h in holidays" :key="h.holidayDate" class="holiday-tag"
