@@ -12,6 +12,8 @@ public class BcRecordCons {
     public static final int BC_CHANNEL_MANUAL = 0;
     /**报餐方式-预约*/
     public static final int BC_CHANNEL_ORDER = 1;
+    /**报餐方式-补报(管理员给未报餐者直接标记就餐时自动补的记录)*/
+    public static final int BC_CHANNEL_SUPPLEMENT = 2;
     /**  是否就餐:已就餐 */
     public static final int HAD_EAT_CONFIRM=1;
     /** 是否就餐:未就餐*/

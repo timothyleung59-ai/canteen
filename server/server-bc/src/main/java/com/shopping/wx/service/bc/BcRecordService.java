@@ -131,4 +131,14 @@ public interface BcRecordService extends IBaseService<BcRecord,Long>{
      * @throws Exception
      */
     int  updateHadEatById(int hadEat,String appiId,Long id) throws  Exception;
+
+    /**
+     * 按员工+日期标记已就餐: 已报餐的直接改状态; 未报餐的自动补一条报餐记录(补报)再标记已就餐
+     * @param appId
+     * @param userId
+     * @param date yyyy-MM-dd
+     * @return
+     * @throws Exception
+     */
+    ActionResult confirmEatByUser(String appId,Long userId,String date) throws Exception;
 }

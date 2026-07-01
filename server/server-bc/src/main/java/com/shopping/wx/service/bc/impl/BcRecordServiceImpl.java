@@ -159,20 +159,21 @@ public class BcRecordServiceImpl extends BaseServiceImpl<BcRecord,Long> implemen
         Map<String,Object> map = new HashMap<>();
         map.put("dintime",date);
         map.put("appId",appId);
-        String sql = "select DATE_FORMAT (r.addTime, '%m-%d %H:%i:%s') as addTime ," +
-                "r.id,r.had_eat as hadEat,u.name ,u.mobile, d.name AS deptName ,w.avatarurl, " +
-                "  case  when  r.bc_channel ='0' then '手动报餐'" +
-                "  when r.bc_channel ='1' then '预约报餐'" +
-                "  when r.bc_channel ='2' then '补报' end as channel "+
-                "from  bc_record r  join bc_user u on (r.app_id = u.app_id and r.user_id = u.id)"+
-                " join bc_user_department d on (d.app_id = u.app_id and d.id = u.user_department_id)"+
-                " join bc_user_wx w on (w.app_id = u.app_id and w.bc_user_id = u.id)"+
-                " where r.app_id =:appId and r.dintime like concat('%',:dintime, '%') ";
+        // 列出所有在职员工(不管当天报没报餐), 左连当天报餐记录:
+        // reported=是否报餐, hadEat=是否就餐, recordId 供核销用(未报餐者为 null)
+        String sql = "select u.id as userId, u.name, d.name as deptName, r.id as recordId, " +
+                " case when r.id is null then 0 else 1 end as reported, " +
+                " ifnull(r.had_eat, 0) as hadEat " +
+                "from bc_user u " +
+                " left join bc_user_department d on (d.app_id = u.app_id and d.id = u.user_department_id) " +
+                " left join bc_record r on (r.app_id = u.app_id and r.user_id = u.id and r.dintime like concat(:dintime, '%')) " +
+                "where u.app_id =:appId and u.deletestatus != '1' ";
         if(CommUtils.isNotNull(deptId)){
-            sql+="and d.id=:deptId";
+            sql+=" and d.id=:deptId";
             map.put("deptId",deptId);
         }
-            sql+=" order by r.dintime asc";
+        // 已报餐的排前面, 方便食堂看谁要来吃; 未报餐的排后面(备用, 走餐时可现场补记)
+        sql+=" order by reported desc, u.id asc";
         List<Map<String, Object>> list=this.bcRecordDAO.findBySqlPage(sql,currentPage,pageSize,map);
         return list;
     }
@@ -302,6 +303,27 @@ public class BcRecordServiceImpl extends BaseServiceImpl<BcRecord,Long> implemen
     public int updateHadEatById(int hadEat,String appiId, Long id) throws Exception {
         int result = this.bcRecordRepository.updateHadEatById(hadEat,id,appiId);
         return result;
+    }
+
+    @Override
+    public ActionResult confirmEatByUser(String appId, Long userId, String date) throws Exception {
+        BcRecord record = this.bcRecordRepository.getByUserIdAndDinTime(appId, userId, date);
+        if (record != null) {
+            // 已报餐: 直接标记已就餐
+            this.bcRecordRepository.updateHadEatById(BcRecordCons.HAD_EAT_CONFIRM, record.getId(), appId);
+            return ActionResult.ok(1);
+        }
+        // 未报餐却来就餐: 补一条报餐记录(渠道=补报)并直接标记已就餐, 保证计入报餐统计
+        BcRecord supplement = new BcRecord();
+        supplement.setAddTime(new Date());
+        supplement.setAppId(appId);
+        supplement.setUserId(userId);
+        supplement.setBcType(BcRecordCons.BC_TYPE_NOON);
+        supplement.setBcChannel(BcRecordCons.BC_CHANNEL_SUPPLEMENT);
+        supplement.setDinTime(CommUtils.formatDate(date, "yyyy-MM-dd"));
+        supplement.setHadEat(BcRecordCons.HAD_EAT_CONFIRM);
+        this.bcRecordRepository.save(supplement);
+        return ActionResult.ok(1);
     }
 
 

@@ -191,4 +191,19 @@ public class BcRecordController {
         }
         return ActionResult.error();
     }
+
+    @ApiOperation(value ="按员工标记已就餐(未报餐者自动补报)",tags = {"BcRecord"},notes = "")
+    @GetMapping("/confirmEatByUser")
+    public  ActionResult confirmEatByUser(@PathVariable String appid,@CurrentBcUser BcUser bcUser,Long userId,int curIndex){
+        try{
+            if(!bcUser.isAdmin()){
+                return ActionResult.error("无权限");
+            }
+            String date = CommUtils.formatDate(CommUtils.getDateAfter(new Date(),curIndex),"yyyy-MM-dd");
+            return this.bcRecordService.confirmEatByUser(appid,userId,date);
+        }catch (Exception e){
+            log.error("按员工确认就餐异常",e);
+        }
+        return ActionResult.error("服务器异常");
+    }
 }

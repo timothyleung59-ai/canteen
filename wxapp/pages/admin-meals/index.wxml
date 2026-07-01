@@ -8,9 +8,10 @@
 
     <view class="list">
         <view wx:if="{{!loading && list.length===0}}" class="empty">{{emptyText}}</view>
-        <view wx:for="{{list}}" wx:key="id" wx:for-index="index" class="record-item flex">
+        <view wx:for="{{list}}" wx:key="userId" wx:for-index="index" class="record-item flex">
             <view class="record-item__name">{{item.name}}</view>
             <view class="record-item__dept flex-item">{{item.deptName}}</view>
+            <view class="record-item__report {{item.reported==1?'reported':''}}">{{item.reported==1?'已报餐':'未报餐'}}</view>
             <view class="record-item__eat {{item.hadEat==1?'eaten':''}}" data-index="{{index}}" bindtap="markEaten">{{item.hadEat==1?'已就餐':'未就餐'}}</view>
         </view>
     </view>

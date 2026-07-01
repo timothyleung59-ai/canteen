@@ -9,7 +9,9 @@
 .list{margin-top: 30rpx;}
 .empty{text-align: center;color: #999;font-size: 26rpx;padding: 80rpx 0;}
 .record-item{padding: 20rpx 0;border-bottom: 1rpx solid #eee;font-size: 28rpx;}
-.record-item__name{width: 160rpx;}
-.record-item__dept{color: #999;font-size: 26rpx;}
-.record-item__eat{color: #999;padding: 6rpx 16rpx;border: 1rpx solid #ddd;border-radius: 6rpx;}
+.record-item__name{width: 130rpx;}
+.record-item__dept{color: #999;font-size: 24rpx;}
+.record-item__report{font-size: 24rpx;color: #bbb;margin-right: 16rpx;}
+.record-item__report.reported{color: #07c160;}
+.record-item__eat{font-size: 24rpx;color: #999;padding: 6rpx 14rpx;border: 1rpx solid #ddd;border-radius: 6rpx;}
 .record-item__eat.eaten{color: #ff7e00;border-color: #ff7e00;}
