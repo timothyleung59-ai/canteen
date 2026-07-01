@@ -30,7 +30,9 @@
         </view>
         <view class="quick-bar">
             <button class="quick-btn quick-btn--cancel" size="mini" bindtap="cancelWeek">取消本周</button>
+            <button class="quick-btn quick-btn--cancel" size="mini" bindtap="cancelNextWeek">取消下周</button>
             <button class="quick-btn quick-btn--cancel" size="mini" bindtap="cancelMonth">取消本月</button>
+            <button class="quick-btn quick-btn--cancel" size="mini" bindtap="cancelNextMonth">取消下月</button>
         </view>
         <view class="delete">点右侧“删除”可取消单天预约</view>
     </view>

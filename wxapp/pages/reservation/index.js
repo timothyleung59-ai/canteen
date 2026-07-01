@@ -56,32 +56,28 @@ Page({
     reserveMonth: function () { this.batchReserve('month'); },
     reserveNextMonth: function () { this.batchReserve('nextMonth'); },
     cancelWeek: function () { this.batchCancel('week'); },
+    cancelNextWeek: function () { this.batchCancel('nextWeek'); },
     cancelMonth: function () { this.batchCancel('month'); },
-    // 批量取消: 取消范围内(本周/本月剩余)的已有预约
+    cancelNextMonth: function () { this.batchCancel('nextMonth'); },
+    // 批量取消: 取消范围内(本周/下周/本月/下月)的已有预约
     batchCancel: function (scope) {
         const that = this;
         const Token = wx.getStorageSync('Token');
         if (!Token) { common.showModel('请先在"我的"完成注册'); return; }
         if (that._batching) return;
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        const start = new Date(today); start.setDate(start.getDate() + 1);
-        let end;
-        if (scope === 'week') {
-            const daysToSun = (7 - today.getDay()) % 7;
-            end = new Date(today); end.setDate(end.getDate() + daysToSun);
-        } else {
-            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        }
+        const range = that._scopeRange(scope);
+        const start = range.start, end = range.end;
+        const scopeName = that._scopeName(scope);
         const targets = (that.data.dateList || []).filter(function (it) {
             const d = new Date(Date.parse(String(it.time).replace(/-/g, '/')));
             d.setHours(0, 0, 0, 0);
             return d >= start && d <= end;
         });
         if (targets.length === 0) {
-            common.showModel(scope === 'week' ? '本周没有可取消的预约' : '本月没有可取消的预约');
+            common.showModel(scopeName + '没有可取消的预约');
             return;
         }
-        common.showConfirm('批量取消', '确认取消' + (scope === 'week' ? '本周' : '本月') + ' ' + targets.length + ' 天的预约吗？', '确认', '再想想').then(function () {
+        common.showConfirm('批量取消', '确认取消' + scopeName + ' ' + targets.length + ' 天的预约吗？', '确认', '再想想').then(function () {
             that._batching = true;
             app.globalData.header.Token = Token;
             const total = targets.length;
@@ -110,9 +106,12 @@ Page({
         const list = this.data.closedDatesList || [];
         return list.indexOf(dateStr) >= 0;
     },
-    // 计算批量目标日期: 本周/本月(明天起到周期末) 或 下周/下月(完整周期), 跳停餐日与当月已订/已报
-    _buildBatchDates: function (scope) {
-        const that = this;
+    // scope 的中文名, "报"/"取消"共用
+    _scopeName: function (scope) {
+        return { week: '本周', nextWeek: '下周', month: '本月', nextMonth: '下月' }[scope] || '';
+    },
+    // 计算 scope 对应的日期范围: 本周/本月=明天起到周期末, 下周/下月=完整周期
+    _scopeRange: function (scope) {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         let start, end;
         if (scope === 'week') {
@@ -130,6 +129,14 @@ Page({
             start = new Date(today); start.setDate(start.getDate() + 1);
             end = new Date(today.getFullYear(), today.getMonth() + 1, 0); // 本月最后一天
         }
+        return { start: start, end: end };
+    },
+    // 计算批量目标日期(报餐/预订用): 跳停餐日与当月已订/已报
+    _buildBatchDates: function (scope) {
+        const that = this;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const range = that._scopeRange(scope);
+        const start = range.start, end = range.end;
         const reserved = that.data.matchDateList || [];
         const reported = that.data.allMealRecordList || [];
         const dates = [];
@@ -153,8 +160,7 @@ Page({
         if (that._batching) return;
         const dates = that._buildBatchDates(scope);
         if (dates.length === 0) {
-            const scopeName = { week: '本周', nextWeek: '下周', month: '本月', nextMonth: '下月' }[scope] || '';
-            common.showModel(scopeName + '已无可预订的工作日');
+            common.showModel(that._scopeName(scope) + '已无可预订的工作日');
             return;
         }
         that._batching = true;
