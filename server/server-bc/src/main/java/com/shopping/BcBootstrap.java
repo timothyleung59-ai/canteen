@@ -1,5 +1,7 @@
 package com.shopping;
 
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -7,6 +9,7 @@ import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.servlet.MultipartConfigElement;
 import java.io.File;
@@ -19,7 +22,7 @@ import java.io.File;
 @EnableConfigurationProperties
 @ComponentScan(basePackages={"com.shopping"})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-//@EnableScheduling
+@EnableScheduling
 public class BcBootstrap {
 
     public static void main(String[] args) throws Exception {
@@ -50,6 +53,15 @@ public class BcBootstrap {
         }
         factory.setLocation(location);
         return factory.createMultipartConfig();
+    }
+
+    /**
+     * 启动时同步一次法定节假日数据, 不用等到每天定时任务的凌晨时刻才第一次有数据。
+     * 网络失败只记日志, 不阻塞启动(HolidaySyncService 内部已吞异常)。
+     */
+    @Bean
+    public ApplicationRunner syncHolidayOnStartup(com.shopping.wx.service.bc.HolidaySyncService holidaySyncService) {
+        return (ApplicationArguments args) -> holidaySyncService.syncCurrentAndNextYear();
     }
 
     // 说明: 原先这里有一个自定义的 PropertySourcesPlaceholderConfigurer 用来加载 wx.yml,

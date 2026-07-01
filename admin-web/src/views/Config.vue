@@ -33,16 +33,31 @@
         <el-switch v-model="form.sundayCanDiner" />
       </el-form-item>
 
-      <el-divider content-position="left">节假日 / 停餐</el-divider>
+      <el-divider content-position="left">法定节假日（自动同步）</el-divider>
+      <el-form-item label="自动同步">
+        <div>
+          <el-button size="small" :loading="syncing" @click="onSync">立即同步</el-button>
+          <span class="hint">系统每天凌晨自动从公开节假日库同步一次，含调休补班安排</span>
+        </div>
+        <div style="margin-top: 10px" v-loading="holidayLoading">
+          <el-tag v-for="h in holidays" :key="h.holidayDate" class="holiday-tag"
+            :type="h.offDay ? 'danger' : 'success'" effect="plain">
+            {{ h.holidayDate }} {{ h.name }}（{{ h.offDay ? '停餐' : '照常开餐' }}）
+          </el-tag>
+          <el-empty v-if="!holidayLoading && !holidays.length" description="暂无数据，点击上方“立即同步”获取" :image-size="60" />
+        </div>
+      </el-form-item>
+
+      <el-divider content-position="left">手动调整（优先级高于自动节假日）</el-divider>
       <el-form-item label="停餐日期">
         <el-input v-model="form.closedDates" type="textarea" :rows="4"
-          placeholder="法定节假日等不开餐的日期，每行一个，格式 2026-10-01" />
+          placeholder="额外的不开餐日期，每行一个，格式 2026-10-01" />
         <span class="hint">这些日期不开餐：员工报餐 / 预订 / 一键报本周本月 都会自动跳过</span>
       </el-form-item>
       <el-form-item label="补班开餐日">
         <el-input v-model="form.openDates" type="textarea" :rows="3"
-          placeholder="调休上班、照常开餐的日期，每行一个，格式 2026-10-11" />
-        <span class="hint">调休补班日：即使是周末也照常开餐（优先级最高）</span>
+          placeholder="需要强制开餐的日期（覆盖自动节假日/周末规则），每行一个，格式 2026-10-11" />
+        <span class="hint">这些日期强制照常开餐，优先级最高，可用于纠正自动同步的节假日安排</span>
       </el-form-item>
 
       <el-form-item>
@@ -56,10 +71,13 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getConfig, saveConfig } from '../api/bc'
+import { getConfig, saveConfig, getHolidays, syncHolidays } from '../api/bc'
 
 const loading = ref(false)
 const saving = ref(false)
+const holidays = ref([])
+const holidayLoading = ref(false)
+const syncing = ref(false)
 const form = reactive({
   id: null,
   userNeedApprove: true,
@@ -120,7 +138,33 @@ async function save() {
   }
 }
 
-onMounted(load)
+async function loadHolidays() {
+  holidayLoading.value = true
+  try {
+    const year = new Date().getFullYear()
+    holidays.value = (await getHolidays(year)) || []
+  } finally {
+    holidayLoading.value = false
+  }
+}
+
+async function onSync() {
+  syncing.value = true
+  try {
+    await syncHolidays()
+    ElMessage.success('同步成功')
+    loadHolidays()
+  } catch (e) {
+    /* 已提示 */
+  } finally {
+    syncing.value = false
+  }
+}
+
+onMounted(() => {
+  load()
+  loadHolidays()
+})
 </script>
 
 <style scoped>
@@ -128,5 +172,8 @@ onMounted(load)
   margin-left: 12px;
   color: #909399;
   font-size: 12px;
+}
+.holiday-tag {
+  margin: 0 8px 8px 0;
 }
 </style>

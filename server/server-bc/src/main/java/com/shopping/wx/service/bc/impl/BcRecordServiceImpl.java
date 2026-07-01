@@ -14,6 +14,7 @@ import com.shopping.wx.constant.BcRecordCons;
 import com.shopping.wx.form.bc.BcRecordQueryForm;
 import com.shopping.wx.service.bc.BcConfigService;
 import com.shopping.wx.service.bc.BcRecordService;
+import com.shopping.wx.service.bc.HolidayJudgeService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,20 +39,16 @@ public class BcRecordServiceImpl extends BaseServiceImpl<BcRecord,Long> implemen
     BcRecordRepository bcRecordRepository;
     @Autowired
     BcConfigService bcConfigService;
+    @Autowired
+    HolidayJudgeService holidayJudgeService;
     @Override
     public ActionResult bcRecordMealSave(String appId,Long id,int status,Integer orderMeal) throws Exception{
         BcConfig config =bcConfigService.getConfigByAppId(appId);
-        // L6: 周末闸门 + 午餐报餐截止时间
+        // L6: 停餐日闸门(法定节假日/手动停餐/周末规则, 服务端强校验, 与小程序端判定口径一致) + 午餐报餐截止时间
         boolean orderTomorrow = (orderMeal != null && 1 == orderMeal);
         Date dinDate = orderTomorrow ? CommUtils.getDateAfter(new Date(), 1) : new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(dinDate);
-        int dow = cal.get(Calendar.DAY_OF_WEEK);
-        if (dow == Calendar.SATURDAY && !config.isSaturdayCanDiner()) {
-            return ActionResult.error(2, "周六不可报餐");
-        }
-        if (dow == Calendar.SUNDAY && !config.isSundayCanDiner()) {
-            return ActionResult.error(2, "周日不可报餐");
+        if (!holidayJudgeService.isOpenDay(dinDate, config)) {
+            return ActionResult.error(2, "该日期不开餐(节假日/周末)");
         }
         // 截止时间只约束"当天报餐"，预约次日不受当天截止限制
         if (!orderTomorrow && CommUtils.isNotNull(config.getLunchOrderTime())) {

@@ -13,6 +13,7 @@ import com.shopping.wx.constant.BcRecordCons;
 import com.shopping.wx.form.bc.BcReserveRecordAddForm;
 import com.shopping.wx.service.bc.BcConfigService;
 import com.shopping.wx.service.bc.BcReserveRecordService;
+import com.shopping.wx.service.bc.HolidayJudgeService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,8 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
     BcRecordRepository bcRecordRepository;
     @Autowired
     BcConfigService bcConfigService;
+    @Autowired
+    HolidayJudgeService holidayJudgeService;
 
     @Override
     public ActionResult bcReserveRecordSave(String appid,Long id,BcReserveRecordAddForm bcReserveRecordAddForm,int status) throws Exception {
@@ -49,14 +52,14 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
         if(!userNeedApprove){
             //中午报餐状态开启
             if(lunchCanMeal){
-                return this.save(appid,id,bcReserveRecordAddForm);
+                return this.save(appid,id,bcReserveRecordAddForm,config);
             }else{
                 return ActionResult.error(2,"中午报餐功能未开启");
             }
         }else{
             if(lunchCanMeal){
                 if(status == 1){
-                    return this.save(appid,id,bcReserveRecordAddForm);
+                    return this.save(appid,id,bcReserveRecordAddForm,config);
                 }else{
                     return ActionResult.error(1,"需要联系管理员给予激活");
                 }
@@ -65,8 +68,12 @@ public class BcReserveRecordServiceImpl extends BaseServiceImpl<BcReserveRecord,
             }
         }
     }
-    public ActionResult save(String appid,Long id,BcReserveRecordAddForm bcReserveRecordAddForm){
+    public ActionResult save(String appid,Long id,BcReserveRecordAddForm bcReserveRecordAddForm,BcConfig config){
         Date reserveDate = CommUtils.formatDate(bcReserveRecordAddForm.getReserveTime(),"yyyy-MM-dd");
+        // L6: 停餐日闸门(法定节假日/手动停餐/周末规则, 服务端强校验, 与小程序端判定口径一致)
+        if (!holidayJudgeService.isOpenDay(reserveDate, config)) {
+            return ActionResult.error(2, "该日期不开餐(节假日/周末)");
+        }
         // L1: 预约去重——同用户同一天已预约则拒绝
         String reserveDateStr = CommUtils.formatDate(reserveDate,"yyyy-MM-dd");
         List<BcReserveRecord> exists = this.bcReserveRecordRepository.findByUserAndReserveDate(appid, id, reserveDateStr);

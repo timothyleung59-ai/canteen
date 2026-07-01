@@ -83,32 +83,6 @@ let showConfirm = (title,content,confirmText = '撤销',cancelText = "取消") =
 let pad2 = (n) => (n < 10 ? '0' + n : '' + n);
 /** Date -> 'yyyy-MM-dd' */
 let fmtYmd = (date) => date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
-/** 把 "2026-10-01\n2026-10-02,..." 解析成 {日期:true} 集合 */
-let parseDateSet = (str) => {
-    let set = {};
-    if (str) {
-        String(str).split(/[\s,，;；、]+/).forEach((d) => {
-            d = (d || '').trim();
-            if (d) set[d] = true;
-        });
-    }
-    return set;
-};
-/**
- * 判断某天是否"不开餐"(停餐)。优先级: 补班开餐日 > 停餐日 > 周末规则
- * @param date Date对象
- * @param cfg  {closedDates, openDates, saturdayCanDiner, sundayCanDiner}
- */
-let isClosedDay = (date, cfg) => {
-    cfg = cfg || {};
-    let ymd = fmtYmd(date);
-    if (parseDateSet(cfg.openDates)[ymd]) return false;   // 补班开餐日 -> 开
-    if (parseDateSet(cfg.closedDates)[ymd]) return true;  // 停餐日 -> 关
-    let dow = date.getDay();
-    if (dow === 6 && !cfg.saturdayCanDiner) return true;  // 周六不开
-    if (dow === 0 && !cfg.sundayCanDiner) return true;    // 周日不开
-    return false;
-};
 
 module.exports = {
   formatTime: formatTime,
@@ -118,6 +92,4 @@ module.exports = {
     showConfirm: showConfirm,
     pad2: pad2,
     fmtYmd: fmtYmd,
-    parseDateSet: parseDateSet,
-    isClosedDay: isClosedDay,
 }

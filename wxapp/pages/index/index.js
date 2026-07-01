@@ -312,8 +312,8 @@ Page({
                     lunchOrderTime: res.data.data.lunchOrderTime,
                     saturdayCanDiner: res.data.data.saturdayCanDiner,
                     sundayCanDiner: res.data.data.sundayCanDiner,
-                    closedDates: res.data.data.closedDates || '',
-                    openDates: res.data.data.openDates || '',
+                    // 后端已合并"自动节假日(含调休) + 手动停餐/开餐 + 周末规则"算出最终结果, 前端直接查表即可
+                    closedDatesList: res.data.data.resolvedClosedDates || [],
                     lunchStartTime: lunchTimeArr[0],
                     lunchEndTime: lunchTimeArr[1]
                 })
@@ -476,13 +476,8 @@ Page({
             // 按 orderMeal 算出真实报餐目标日: 2=今天, 1=明天
             const offset = that.data.orderMeal == 2 ? 0 : 1;
             const target = new Date(); target.setHours(0, 0, 0, 0); target.setDate(target.getDate() + offset);
-            const cfg = {
-                closedDates: that.data.closedDates,
-                openDates: that.data.openDates,
-                saturdayCanDiner: that.data.saturdayCanDiner,
-                sundayCanDiner: that.data.sundayCanDiner
-            };
-            if (common.isClosedDay(target, cfg)) {
+            const closedDatesList = that.data.closedDatesList || [];
+            if (closedDatesList.indexOf(common.fmtYmd(target)) >= 0) {
                 common.showModel('该日期不开餐(节假日/周末)，不能报餐');
             }else if (that.data.baoCan == 0){
                 that.NewspaperMeal();

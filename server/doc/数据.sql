@@ -64,6 +64,22 @@ CREATE TABLE `bc_config` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT=';';
 
 -- ----------------------------
+--  Table structure for `bc_holiday`
+--  全国法定节假日缓存(全局共享,不分app_id), 定时从开源节假日库同步
+-- ----------------------------
+DROP TABLE IF EXISTS `bc_holiday`;
+CREATE TABLE `bc_holiday` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `holiday_date` varchar(10) NOT NULL COMMENT '日期 yyyy-MM-dd',
+  `year` int(11) NOT NULL COMMENT '年份',
+  `name` varchar(64) DEFAULT NULL COMMENT '节假日/调休名称',
+  `is_off_day` bit(1) NOT NULL COMMENT '1=法定节假日(停餐) 0=调休上班(开餐)',
+  `update_time` datetime DEFAULT NULL COMMENT '本条最后同步时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNQ_HOLIDAY_DATE` (`holiday_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='法定节假日缓存(自动同步)';
+
+-- ----------------------------
 --  Table structure for `bc_record`
 -- ----------------------------
 DROP TABLE IF EXISTS `bc_record`;

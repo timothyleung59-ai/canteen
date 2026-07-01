@@ -42,8 +42,8 @@ Page({
                 that.setData({
                     saturdayCanDiner: d.saturdayCanDiner,
                     sundayCanDiner: d.sundayCanDiner,
-                    closedDates: d.closedDates || '',
-                    openDates: d.openDates || ''
+                    // 后端已合并"自动节假日(含调休) + 手动停餐/开餐 + 周末规则"算出最终结果, 前端直接查表即可
+                    closedDatesList: d.resolvedClosedDates || []
                 })
             }
         })
@@ -103,19 +103,14 @@ Page({
             step();
         });
     },
-    // 当前报餐配置(给 isClosedDay 用)
-    _cfg: function () {
-        return {
-            closedDates: this.data.closedDates,
-            openDates: this.data.openDates,
-            saturdayCanDiner: this.data.saturdayCanDiner,
-            sundayCanDiner: this.data.sundayCanDiner
-        };
+    // 某天是否停餐: 直接查后端下发的最终结果列表(已合并自动节假日+手动覆盖+周末规则)
+    _isClosedDate: function (dateStr) {
+        const list = this.data.closedDatesList || [];
+        return list.indexOf(dateStr) >= 0;
     },
-    // 计算批量目标日期: 明天起到本周日/本月末, 跳停餐日/周末与当月已订/已报
+    // 计算批量目标日期: 明天起到本周日/本月末, 跳停餐日与当月已订/已报
     _buildBatchDates: function (scope) {
         const that = this;
-        const cfg = that._cfg();
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const start = new Date(today); start.setDate(start.getDate() + 1);
         let end;
@@ -130,12 +125,13 @@ Page({
         const dates = [];
         const cur = new Date(start);
         while (cur <= end) {
-            let skip = common.isClosedDay(cur, cfg); // 停餐日/周末跳过(补班日不跳)
+            const dstr = common.fmtYmd(cur);
+            let skip = that._isClosedDate(dstr);
             if (!skip && cur.getFullYear() === today.getFullYear() && cur.getMonth() === today.getMonth()) {
                 const dnum = '' + cur.getDate();
                 if (reserved.indexOf(dnum) >= 0 || reported.indexOf(dnum) >= 0) skip = true;
             }
-            if (!skip) dates.push({ date: common.fmtYmd(cur), week: common.getMyDay(new Date(cur.getTime())) });
+            if (!skip) dates.push({ date: dstr, week: common.getMyDay(new Date(cur.getTime())) });
             cur.setDate(cur.getDate() + 1);
         }
         return dates;
@@ -354,7 +350,7 @@ Page({
                 common.showModel('只能预约比今天大的日期');
             }else if(!that.data.dinTime){
                 common.showModel('请选择日期');
-            }else if (common.isClosedDay(noSelectDay, that._cfg())) {
+            }else if (that._isClosedDate(common.fmtYmd(noSelectDay))) {
                 common.showModel('该日期不开餐(节假日/周末)，不可预订');
             }else if( noSelectDay < now){
                 common.showModel('只能预约比今天大的日期');

@@ -94,3 +94,11 @@ export function getConfig() {
 export function saveConfig(config) {
   return request.post(`${base()}/config/saveOrUpdate`, null, { params: config })
 }
+
+/* ---------------- 节假日(自动同步) ---------------- */
+export function getHolidays(year) {
+  return request.get(`${base()}/config/holidays`, { params: { year } })
+}
+export function syncHolidays() {
+  return request.post(`${base()}/config/syncHolidays`)
+}
