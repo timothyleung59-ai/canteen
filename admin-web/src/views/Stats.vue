@@ -17,7 +17,20 @@
     <el-alert v-if="total" :closable="false" type="info" show-icon style="margin-bottom: 12px"
       :title="`共 ${total} 名员工有报餐记录`" />
 
-    <el-table :data="rows" stripe v-loading="loading" border>
+    <!-- 手机端: 卡片列表 -->
+    <div v-if="isMobile" v-loading="loading">
+      <div v-for="(row, idx) in rows" :key="idx" class="mobile-card">
+        <div class="mobile-card-header">
+          <span class="mobile-card-title">{{ row.name }}</span>
+          <el-tag type="primary" effect="dark">{{ row.num }} 次</el-tag>
+        </div>
+        <div class="mobile-card-row"><span class="k">部门</span><span class="v">{{ row.deptName }}</span></div>
+        <div class="mobile-card-row"><span class="k">手机号</span><span class="v">{{ row.mobile }}</span></div>
+      </div>
+    </div>
+
+    <!-- 桌面端: 表格 -->
+    <el-table v-else :data="rows" stripe v-loading="loading" border>
       <el-table-column type="index" label="#" width="60" />
       <el-table-column prop="deptName" label="部门" min-width="140" />
       <el-table-column prop="name" label="姓名" min-width="120" />
@@ -31,8 +44,9 @@
     <el-empty v-if="!loading && !rows.length" description="暂无统计数据" />
 
     <div class="pager">
-      <el-pagination layout="total, sizes, prev, pager, next" :total="total" :current-page="page"
-        :page-size="size" :page-sizes="[10, 20, 50]" @current-change="onPage" @size-change="onSize" />
+      <el-pagination :layout="isMobile ? 'prev, pager, next' : 'total, sizes, prev, pager, next'" :total="total"
+        :current-page="page" :page-size="size" :page-sizes="[10, 20, 50]" @current-change="onPage"
+        @size-change="onSize" />
     </div>
   </div>
 </template>
@@ -43,7 +57,9 @@ import { ElMessage } from 'element-plus'
 import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { countRecordList, exportRecordCount, getDepartmentList } from '../api/bc'
 import { saveBlob } from '../utils/download'
+import { useIsMobile } from '../composables/useIsMobile'
 
+const { isMobile } = useIsMobile()
 const loading = ref(false)
 const exporting = ref(false)
 const rows = ref([])

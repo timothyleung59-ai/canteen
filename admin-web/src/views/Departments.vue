@@ -6,7 +6,22 @@
       <el-button type="primary" :icon="Plus" @click="openAdd">新增部门</el-button>
     </div>
 
-    <el-table :data="rows" stripe v-loading="loading" border>
+    <!-- 手机端: 卡片列表 -->
+    <div v-if="isMobile" v-loading="loading">
+      <div v-for="row in rows" :key="row.id" class="mobile-card">
+        <div class="mobile-card-header">
+          <span class="mobile-card-title">{{ row.name }}</span>
+          <el-tag type="info" effect="plain">{{ row.headcount != null ? row.headcount : '-' }} 人</el-tag>
+        </div>
+        <div class="mobile-card-actions">
+          <el-button size="small" :icon="Edit" @click="openEdit(row)">重命名</el-button>
+          <el-button size="small" type="danger" :icon="Delete" @click="remove(row)">删除</el-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 桌面端: 表格 -->
+    <el-table v-else :data="rows" stripe v-loading="loading" border>
       <el-table-column type="index" label="#" width="60" />
       <el-table-column prop="name" label="部门名称" min-width="200" />
       <el-table-column prop="headcount" label="员工人数" width="140">
@@ -46,7 +61,9 @@ import {
   updateDepartmentName,
   deleteDepartment
 } from '../api/bc'
+import { useIsMobile } from '../composables/useIsMobile'
 
+const { isMobile } = useIsMobile()
 const loading = ref(false)
 const rows = ref([])
 const dlg = ref(false)

@@ -33,3 +33,62 @@ body {
   display: flex;
   justify-content: flex-end;
 }
+
+/* 手机端: 表格 -> 卡片列表 通用样式 */
+.mobile-card {
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.mobile-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.mobile-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  word-break: break-all;
+}
+.mobile-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #606266;
+  padding: 4px 0;
+}
+.mobile-card-row .k {
+  color: #909399;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.mobile-card-row .v {
+  text-align: right;
+  word-break: break-all;
+}
+.mobile-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f2f5;
+}
+
+@media (max-width: 768px) {
+  .page-card {
+    padding: 12px;
+  }
+  .toolbar {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .toolbar .el-input,
+  .toolbar .el-select {
+    width: 100% !important;
+    flex: 1 1 auto;
+  }
+}

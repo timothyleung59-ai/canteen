@@ -14,7 +14,24 @@
       <el-button type="success" :icon="Download" :loading="exporting" @click="onExport">导出 Excel</el-button>
     </div>
 
-    <el-table :data="rows" stripe v-loading="loading" border>
+    <!-- 手机端: 卡片列表 -->
+    <div v-if="isMobile" v-loading="loading">
+      <div v-for="(row, idx) in rows" :key="idx" class="mobile-card">
+        <div class="mobile-card-header">
+          <span class="mobile-card-title">{{ row.name }}</span>
+          <el-tag :type="row.bcChannel === '预约报餐' ? 'warning' : 'success'" effect="plain">
+            {{ row.bcChannel === '预约报餐' ? '预约' : '已报' }}
+          </el-tag>
+        </div>
+        <div class="mobile-card-row"><span class="k">报餐时间</span><span class="v">{{ row.dinTime }}</span></div>
+        <div class="mobile-card-row"><span class="k">手机号</span><span class="v">{{ row.mobile }}</span></div>
+        <div class="mobile-card-row"><span class="k">部门</span><span class="v">{{ row.deptName }}</span></div>
+        <div class="mobile-card-row"><span class="k">餐别</span><span class="v">{{ row.bcType }}</span></div>
+      </div>
+    </div>
+
+    <!-- 桌面端: 表格 -->
+    <el-table v-else :data="rows" stripe v-loading="loading" border>
       <el-table-column prop="dinTime" label="报餐时间" min-width="170" />
       <el-table-column prop="name" label="姓名" min-width="100" />
       <el-table-column prop="mobile" label="手机号" min-width="130" />
@@ -32,8 +49,9 @@
     <el-empty v-if="!loading && !rows.length" description="暂无报餐记录" />
 
     <div class="pager">
-      <el-pagination layout="total, sizes, prev, pager, next" :total="total" :current-page="page"
-        :page-size="size" :page-sizes="[10, 20, 50]" @current-change="onPage" @size-change="onSize" />
+      <el-pagination :layout="isMobile ? 'prev, pager, next' : 'total, sizes, prev, pager, next'" :total="total"
+        :current-page="page" :page-size="size" :page-sizes="[10, 20, 50]" @current-change="onPage"
+        @size-change="onSize" />
     </div>
   </div>
 </template>
@@ -44,7 +62,9 @@ import { ElMessage } from 'element-plus'
 import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { getRecordList, exportRecords, getDepartmentList } from '../api/bc'
 import { saveBlob } from '../utils/download'
+import { useIsMobile } from '../composables/useIsMobile'
 
+const { isMobile } = useIsMobile()
 const loading = ref(false)
 const exporting = ref(false)
 const rows = ref([])

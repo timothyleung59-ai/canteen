@@ -12,7 +12,25 @@
       <el-button type="success" :icon="Download" :loading="exporting" @click="onExport">导出 Excel</el-button>
     </div>
 
-    <el-table :data="rows" stripe v-loading="loading" border>
+    <!-- 手机端: 卡片列表 -->
+    <div v-if="isMobile" v-loading="loading">
+      <div v-for="row in rows" :key="row.id" class="mobile-card">
+        <div class="mobile-card-header">
+          <span class="mobile-card-title">{{ row.name }}</span>
+          <el-switch :model-value="row.status === 1" active-text="已激活" inactive-text="待审核"
+            inline-prompt @change="(v) => toggleStatus(row, v)" />
+        </div>
+        <div class="mobile-card-row"><span class="k">手机号</span><span class="v">{{ row.mobile }}</span></div>
+        <div class="mobile-card-row"><span class="k">部门</span><span class="v">{{ row.department || '未分配' }}</span></div>
+        <div class="mobile-card-actions">
+          <el-button size="small" :icon="Switch" @click="openDept(row)">调部门</el-button>
+          <el-button size="small" type="danger" :icon="Delete" @click="remove(row)">删除</el-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 桌面端: 表格 -->
+    <el-table v-else :data="rows" stripe v-loading="loading" border>
       <el-table-column prop="name" label="姓名" min-width="110" />
       <el-table-column prop="mobile" label="手机号" min-width="140" />
       <el-table-column prop="department" label="部门" min-width="130">
@@ -34,8 +52,9 @@
     <el-empty v-if="!loading && !rows.length" description="暂无员工" />
 
     <div class="pager">
-      <el-pagination layout="total, sizes, prev, pager, next" :total="total" :current-page="page"
-        :page-size="size" :page-sizes="[10, 20, 50]" @current-change="onPage" @size-change="onSize" />
+      <el-pagination :layout="isMobile ? 'prev, pager, next' : 'total, sizes, prev, pager, next'" :total="total"
+        :current-page="page" :page-size="size" :page-sizes="[10, 20, 50]" @current-change="onPage"
+        @size-change="onSize" />
     </div>
 
     <el-dialog v-model="deptDlg" title="调整部门" width="360px">
@@ -68,7 +87,9 @@ import {
   getDepartmentList
 } from '../api/bc'
 import { saveBlob } from '../utils/download'
+import { useIsMobile } from '../composables/useIsMobile'
 
+const { isMobile } = useIsMobile()
 const loading = ref(false)
 const exporting = ref(false)
 const rows = ref([])

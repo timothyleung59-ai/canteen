@@ -68,9 +68,12 @@ async function onSubmit() {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #1f2d3d 0%, #3a6073 100%);
+  padding: 20px;
+  box-sizing: border-box;
 }
 .login-card {
   width: 380px;
+  max-width: 100%;
   border-radius: 12px;
 }
 .brand {

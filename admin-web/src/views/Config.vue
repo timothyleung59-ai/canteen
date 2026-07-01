@@ -1,7 +1,7 @@
 <template>
   <div class="page-card" style="max-width: 640px" v-loading="loading">
     <h3 style="margin-top: 0">报餐设置</h3>
-    <el-form label-width="160px">
+    <el-form :label-width="isMobile ? undefined : '160px'" :label-position="isMobile ? 'top' : 'right'">
       <el-form-item label="新员工需要审核">
         <el-switch v-model="form.userNeedApprove" />
         <span class="hint">开启后，新注册员工需管理员激活才能报餐</span>
@@ -72,7 +72,9 @@
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getConfig, saveConfig, getHolidays, syncHolidays } from '../api/bc'
+import { useIsMobile } from '../composables/useIsMobile'
 
+const { isMobile } = useIsMobile()
 const loading = ref(false)
 const saving = ref(false)
 const holidays = ref([])
@@ -175,5 +177,16 @@ onMounted(() => {
 }
 .holiday-tag {
   margin: 0 8px 8px 0;
+}
+@media (max-width: 768px) {
+  .hint {
+    display: block;
+    margin-left: 0;
+    margin-top: 6px;
+  }
+  :deep(.el-time-picker),
+  :deep(.el-textarea) {
+    width: 100% !important;
+  }
 }
 </style>
