@@ -80,4 +80,13 @@ public interface BcUserService extends IBaseService<BcUser,Long> {
      * @throws Exception
      */
     int editDepartmentIdById(String appId,Long userDepartmentId,Long id) throws  Exception;
+
+    /**
+     * 软删除员工(标记删除, 不物理删除, 保留历史报餐记录的关联)
+     * @param appId
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    int softDeleteById(String appId,Long id) throws Exception;
 }

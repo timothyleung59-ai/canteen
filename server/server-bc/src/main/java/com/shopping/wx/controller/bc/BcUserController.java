@@ -189,7 +189,7 @@ public class BcUserController {
     @DeleteMapping("/delete")
     public ActionResult deleteById(@PathVariable String appid,Long id){
         try{
-            this.bcUserService.delete(id);
+            this.bcUserService.softDeleteById(appid,id);
             return  ActionResult.ok();
         }catch (Exception e){
             log.error("删除员工异常",e);

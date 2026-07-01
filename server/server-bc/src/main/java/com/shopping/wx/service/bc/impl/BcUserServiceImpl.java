@@ -82,7 +82,7 @@ public class BcUserServiceImpl  extends BaseServiceImpl<BcUser,Long> implements 
         map.put("appId",queryForm.getAppId());
         String sql ="select  u.id,u.name,u.mobile,d.name as department,u.status,u.user_department_id from bc_user u"+
                 " left join bc_user_department d on(u.app_id= d.app_id and u.user_department_id =d.id)"+
-                " where u.app_id =:appId";
+                " where u.app_id =:appId and u.deletestatus !='1'";
         if(CommUtils.isNotNull(queryForm.getName())){
             sql+=" and u.name like concat('%',:name,'%')";
             map.put("name",queryForm.getName());
@@ -116,7 +116,7 @@ public class BcUserServiceImpl  extends BaseServiceImpl<BcUser,Long> implements 
         map.put("appId",queryForm.getAppId());
         String sql ="select  count(u.id) as count from bc_user u"+
                 " left join bc_user_department d on(u.app_id= d.app_id and u.user_department_id =d.id)"+
-                " where u.app_id =:appId";
+                " where u.app_id =:appId and u.deletestatus !='1'";
         if (CommUtils.isNotNull(queryForm.getName())){
             sql+=" and u.name like concat('%',:name,'%')";
             map.put("name",queryForm.getName());
@@ -172,6 +172,11 @@ public class BcUserServiceImpl  extends BaseServiceImpl<BcUser,Long> implements 
     @Override
     public int editDepartmentIdById(String appId, Long userDepartmentId,Long id) throws Exception {
         return this.bcUserRepository.editBcUserDepartmentById(userDepartmentId,appId,id);
+    }
+
+    @Override
+    public int softDeleteById(String appId, Long id) throws Exception {
+        return this.bcUserRepository.softDeleteById(appId,id);
     }
 
 }
