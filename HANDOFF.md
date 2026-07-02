@@ -172,6 +172,12 @@ docker compose -f docker-compose.prebuilt.yml down             # 停止
 4. **Druid config filter**：老版本 Druid (1.0.28) 的 `config` filter 会干扰密码传递，已从 filters 列表中移除，改为环境变量可覆盖：`DRUID_FILTERS=stat,wall,log4j`。
 5. **后台鉴权边界**：`AdminAuthFilter` 只拦 `PROTECTED` 列表里的纯管理接口。`confirmEat` **故意开放**——小程序统计页普通用户要用。匹配用边界匹配，别改回 `contains`。
 6. **构建用 JDK8**：本机是高版本 JDK，务必用 `maven:3.9-eclipse-temurin-8` 容器。
+7. **⚠️ 一个接口两个前端在用，改鉴权会互相打断**：`/bc/{appid}/...` 下的接口，小程序(用 `Token` 头 + `@CurrentBcUser`)和 Web 后台(用 `Admin-Token` 头 + `AdminAuthFilter`)**共用同一批**。给某接口加 `@CurrentBcUser` 会让只带 `Admin-Token` 的后台调用直接 401。已踩过的坑（2026-07-02）：`getTotalRecordByDinTime` 被误加 `@CurrentBcUser`，导致后台首页登录后必 401、被弹回登录页，表现成"登录不成功"。**改任何 `/bc/*` 接口的鉴权前，先确认它到底被谁调**（`grep 接口名 wxapp/ admin-web/`）。
+
+## 上线前必测（每次改完 `/bc/*` 接口或鉴权后务必跑）
+
+1. **Web 后台**：登录 → 首页四张卡片出数 → 员工/明细/统计/部门/设置各页不报错、不被弹回登录页。（后台首页 = 登录后第一个页面，它任何一个并发请求 401 都会清登录态跳回登录，最容易漏测。）
+2. **小程序**：注册 → 报餐/取消 → 预订 → 管理员看报餐名单。（小程序至今仍主要靠 `node --check`，真机没系统测过，见下方待办。）
 
 ---
 
