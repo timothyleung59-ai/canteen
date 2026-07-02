@@ -40,6 +40,7 @@ public class AdminAuthFilter implements Filter {
             "/BcUserDepartment/deleteById",
             "/BcRecord/getBcRecordList",
             "/BcRecord/countBcRecordPageList",
+            "/BcRecord/getTotalRecordByDinTime",
             "/BcRecord/export",
             "/BcRecord/exportCount",
             "/BcBanner/upload",
@@ -48,10 +49,10 @@ public class AdminAuthFilter implements Filter {
             "/config/saveOrUpdate",
             "/config/holidays",
             "/config/syncHolidays"
-            // 注意: /BcRecord/getBcRecordListByDinTime、/confirmEat、/confirmEatByUser、
-            // /getTotalRecordByDinTime 故意不在此列——这几个是小程序管理员查看报餐名单页面调用的
-            // 接口, 用的是普通登录用户 Token 头(非 Admin-Token), 权限校验改在各自 controller 方法里
-            // 用 @CurrentBcUser 判断 bcUser.isAdmin(), 不走这个基于 Admin-Token 的过滤器。
+            // 注意: /BcRecord/getBcRecordListByDinTime、/confirmEat、/confirmEatByUser 故意不在此列——
+            // 这几个是小程序管理员查看报餐名单页面调用的接口, 用的是普通登录用户 Token 头(非 Admin-Token),
+            // 权限校验在各自 controller 方法里用 @CurrentBcUser 判断 bcUser.isAdmin(), 不走本过滤器。
+            // (getTotalRecordByDinTime 只有 Web 后台首页用, 已上移到受保护列表中)
     );
 
     @Override

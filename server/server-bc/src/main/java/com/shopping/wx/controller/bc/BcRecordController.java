@@ -74,13 +74,12 @@ public class BcRecordController {
         return ActionResult.error("服务器异常");
     }
 
+    // 仅 Web 后台首页(概览)调用, 由 AdminAuthFilter 用 Admin-Token 保护;
+    // 不用 @CurrentBcUser(那是小程序用户 Token), 否则后台调用会 401。小程序不调此接口。
     @ApiOperation(value = "查询报餐总人数",tags={"BcRecord"},notes = "")
     @GetMapping(value = "/getTotalRecordByDinTime")
-    public ActionResult getTotalRecord(@PathVariable String appid,@CurrentBcUser BcUser bcUser,int curIndex){
+    public ActionResult getTotalRecord(@PathVariable String appid,int curIndex){
         try{
-            if(!bcUser.isAdmin()){
-                return ActionResult.error("无权限");
-            }
             String date = CommUtils.formatDate(CommUtils.getDateAfter(new Date(),curIndex),"yyyy-MM-dd");
             int  totalNum = this.bcRecordService.getTotalRecordByDinTime(appid,date);
             return  ActionResult.ok(totalNum);
